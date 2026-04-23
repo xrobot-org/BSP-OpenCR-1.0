@@ -16,7 +16,7 @@
 **
 **  Target      : STMicroelectronics STM32
 **
-**  Distribution: The file is distributed “as is,” without any warranty
+**  Distribution: The file is distributed 闁炽儲绔祍 is,闁?without any warranty
 **                of any kind.
 **
 *****************************************************************************
@@ -55,7 +55,8 @@ ENTRY(Reset_Handler)
 /* Specify the memory areas */
 MEMORY
 {
-RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 320K
+DTCMRAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 64K
+RAM (xrw)      : ORIGIN = 0x20010000, LENGTH = 256K
 FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 1024K
 }
 
@@ -225,6 +226,13 @@ SECTIONS
   PROVIDE( __bss_start = __tbss_start );
   PROVIDE( __bss_size = __bss_end - __bss_start );
 
+  .dma_buffer (NOLOAD) : ALIGN(32)
+  {
+    . = ALIGN(32);
+    *(.dma_buffer)
+    *(.dma_buffer*)
+    . = ALIGN(32);
+  } >DTCMRAM
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack (NOLOAD) :
   {
