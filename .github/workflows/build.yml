@@ -1,0 +1,38 @@
+name: opencr build
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/xrobot-org/docker-image-stm32:main
+      options: --user 0
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: configure env
+        run: |
+          export GCC_TOOLCHAIN_ROOT=/opt/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi/bin
+          export CLANG_GCC_CMSIS_COMPILER=/opt/st-arm-clang
+          echo "GCC_TOOLCHAIN_ROOT=$GCC_TOOLCHAIN_ROOT" >> $GITHUB_ENV
+          echo "CLANG_GCC_CMSIS_COMPILER=$CLANG_GCC_CMSIS_COMPILER" >> $GITHUB_ENV
+
+      - name: configure bootloader
+        run: cmake --preset BootloaderDebug
+
+      - name: build bootloader
+        run: cmake --build --preset BootloaderDebug
+
+      - name: configure app
+        run: cmake --preset AppDebug
+
+      - name: build app
+        run: cmake --build --preset AppDebug
