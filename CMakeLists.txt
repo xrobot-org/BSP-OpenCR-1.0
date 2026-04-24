@@ -13,6 +13,9 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
 
+set(OPENCR_IMAGE "default" CACHE STRING "OpenCR image kind: default, bootloader, or app")
+set_property(CACHE OPENCR_IMAGE PROPERTY STRINGS default bootloader app)
+
 # Define the build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
@@ -27,6 +30,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 # Core project settings
 project(${CMAKE_PROJECT_NAME})
 message("Build type: " ${CMAKE_BUILD_TYPE})
+message("OpenCR image: " ${OPENCR_IMAGE})
 
 # Enable CMake support for ASM and C languages
 enable_language(C ASM)
@@ -43,8 +47,15 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 )
 
 # Add sources to executable
+file(GLOB OPENCR_USER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/User/*.cpp")
+if(OPENCR_IMAGE STREQUAL "bootloader")
+    list(FILTER OPENCR_USER_SOURCES EXCLUDE REGEX ".*/User/app_main\.cpp$")
+else()
+    list(FILTER OPENCR_USER_SOURCES EXCLUDE REGEX ".*/User/bootloader_main\.cpp$")
+endif()
+
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
+    ${OPENCR_USER_SOURCES}
 )
 
 # Add include paths
@@ -55,7 +66,14 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add project symbols (macros)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined symbols
+    OPENCR_IMAGE_${OPENCR_IMAGE}
 )
+
+foreach(target_name IN ITEMS stm32cubemx STM32_Drivers FreeRTOS)
+    if(TARGET ${target_name})
+        target_compile_definitions(${target_name} INTERFACE OPENCR_IMAGE_${OPENCR_IMAGE})
+    endif()
+endforeach()
 
 # Remove wrong libob.a library dependency when using cpp files
 list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)

@@ -22,6 +22,24 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
+        },
+        {
+            "name": "BootloaderDebug",
+            "inherits": "default",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "OPENCR_IMAGE": "bootloader",
+                "OPENCR_LINKER_SCRIPT": "${sourceDir}/STM32F746XX_BOOTLOADER.ld"
+            }
+        },
+        {
+            "name": "AppDebug",
+            "inherits": "default",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "OPENCR_IMAGE": "app",
+                "OPENCR_LINKER_SCRIPT": "${sourceDir}/STM32F746XX_APP.ld"
+            }
         }
     ],
     "buildPresets": [
@@ -32,6 +50,14 @@
         {
             "name": "Release",
             "configurePreset": "Release"
+        },
+        {
+            "name": "BootloaderDebug",
+            "configurePreset": "BootloaderDebug"
+        },
+        {
+            "name": "AppDebug",
+            "configurePreset": "AppDebug"
         }
     ]
 }

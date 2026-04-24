@@ -1,8 +1,10 @@
 #include "app_main.h"
 
 #include "cdc_uart.hpp"
+#include "dfu/dfu_runtime.hpp"
 #include "libxr.hpp"
 #include "main.h"
+#include "opencr_flash_layout.hpp"
 #include "stm32_adc.hpp"
 #include "stm32_can.hpp"
 #include "stm32_canfd.hpp"
@@ -50,7 +52,16 @@ static uint8_t usb_otg_fs_ep1_in_buf[128];
 static uint8_t usb_otg_fs_ep1_out_buf[128];
 static uint8_t usb_otg_fs_ep2_in_buf[16];
 
+
+static void JumpToBootloader(void*) {
+  NVIC_SystemReset();
+  while (true) {}
+}
+
 extern "C" void app_main(void) {
+  SCB->VTOR = OpenCR::APP_BASE;
+  __DSB();
+  __ISB();
   // clang-format on
   // NOLINTEND
   /* User Code Begin 2 */
@@ -97,8 +108,9 @@ extern "C" void app_main(void) {
 
   STM32CAN can2(&hcan2, 5);
 
-  static constexpr auto USB_OTG_FS_LANG_PACK = LibXR::USB::DescriptorStrings::MakeLanguagePack(LibXR::USB::DescriptorStrings::Language::EN_US, "XRobot", "STM32 XRUSB USB_OTG_FS CDC Demo", "XRUSB-DEMO-");
+  static constexpr auto USB_OTG_FS_LANG_PACK = LibXR::USB::DescriptorStrings::MakeLanguagePack(LibXR::USB::DescriptorStrings::Language::EN_US, "XRobot", "OpenCR App", "XRUSB-DEMO-");
   LibXR::USB::CDCUart usb_otg_fs_cdc(128, 128, 3);
+  LibXR::USB::DfuRuntimeClass usb_otg_fs_dfu_rt(JumpToBootloader, nullptr, 50, "OpenCR Runtime DFU");
 
   STM32USBDeviceOtgFS usb_fs(
       &hpcd_USB_OTG_FS,
@@ -108,26 +120,23 @@ extern "C" void app_main(void) {
       USB::DeviceDescriptor::PacketSize0::SIZE_64,
       0x1D50, 0x6199, 0x100,
       {&USB_OTG_FS_LANG_PACK},
-      {{&usb_otg_fs_cdc}},
+      {{&usb_otg_fs_cdc, &usb_otg_fs_dfu_rt}},
       {reinterpret_cast<void *>(UID_BASE), 12}
   );
   usb_fs.Init(false);
   usb_fs.Start(false);
 
   STM32Watchdog iwdg(&hiwdg, 1000, 250);
-
-  /* Terminal Configuration */
-
   iwdg.Feed();
-  auto iwdg_task = Timer::CreateTask(iwdg.TaskFun, reinterpret_cast<LibXR::Watchdog *>(&iwdg), 250);
-  Timer::Add(iwdg_task);
-  Timer::Start(iwdg_task);
 
   // clang-format on
   // NOLINTEND
   /* User Code Begin 3 */
-  while(true) {
-    Thread::Sleep(UINT32_MAX);
+  while (true) {
+    iwdg.Feed();
+    HAL_GPIO_TogglePin(LED_RUN_GPIO_Port, LED_RUN_Pin);
+    Thread::Sleep(100);
   }
   /* User Code End 3 */
 }
+

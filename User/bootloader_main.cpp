@@ -1,0 +1,147 @@
+#include <cstdint>
+
+#include "dfu/dfu.hpp"
+#include "libxr.hpp"
+#include "main.h"
+#include "opencr_flash_layout.hpp"
+#include "stm32_flash.hpp"
+#include "stm32_timebase.hpp"
+#include "stm32_usb_dev.hpp"
+
+extern IWDG_HandleTypeDef hiwdg;
+extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+extern TIM_HandleTypeDef htim13;
+
+namespace
+{
+
+constexpr uint32_t RAM_BASE = 0x20000000u;
+constexpr uint32_t RAM_END = 0x20050000u;
+constexpr uint32_t APP_FLASH_END = 0x08100000u;
+uint8_t ep0_in_buf[64];
+uint8_t ep0_out_buf[64];
+
+void SetStatusLed(GPIO_PinState led1, GPIO_PinState led2, GPIO_PinState led3,
+                  GPIO_PinState led4, GPIO_PinState status)
+{
+  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, led1);
+  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, led2);
+  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, led3);
+  HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, led4);
+  HAL_GPIO_WritePin(LED_RUN_GPIO_Port, LED_RUN_Pin, status);
+}
+
+bool AppVectorIsValid()
+{
+  const auto stack = *reinterpret_cast<const uint32_t*>(OpenCR::APP_BASE);
+  const auto reset = *reinterpret_cast<const uint32_t*>(OpenCR::APP_BASE + 4u);
+  return (stack >= RAM_BASE && stack <= RAM_END && (stack % 4u) == 0u &&
+          reset >= OpenCR::APP_BASE && reset < APP_FLASH_END && (reset & 1u) == 1u);
+}
+
+void BoardDeinit()
+{
+  HAL_PCD_Stop(&hpcd_USB_OTG_FS);
+  HAL_PCD_DeInit(&hpcd_USB_OTG_FS);
+
+  HAL_RCC_DeInit();
+  HAL_DeInit();
+
+  SCB_DisableICache();
+  SCB_DisableDCache();
+
+  __disable_irq();
+  SysTick->CTRL = 0u;
+  SysTick->LOAD = 0u;
+  SysTick->VAL = 0u;
+
+  for (uint32_t i = 0u; i < 8u; ++i)
+  {
+    NVIC->ICER[i] = 0xFFFFFFFFu;
+    NVIC->ICPR[i] = 0xFFFFFFFFu;
+  }
+
+  __DSB();
+  __ISB();
+}
+
+[[noreturn]] void JumpToAppNow()
+{
+  const auto app_base = OpenCR::APP_BASE;
+
+  BoardDeinit();
+
+  __set_CONTROL(0u);
+  __set_BASEPRI(0u);
+  __set_FAULTMASK(0u);
+  __ISB();
+
+  SCB->VTOR = app_base;
+  __DSB();
+  __ISB();
+  __enable_irq();
+
+  asm volatile(
+      "ldr r0, [%0, #0]    \n"
+      "msr msp, r0         \n"
+      "isb                 \n"
+      "ldr r0, [%0, #4]    \n"
+      "bx  r0              \n"
+      :
+      : "r"(app_base)
+      : "r0");
+
+  while (true) {}
+}
+
+}  // namespace
+
+extern "C" void app_main(void)
+{
+  LibXR::STM32TimerTimebase timebase(&htim13);
+  LibXR::PlatformInit();
+
+  LibXR::STM32Flash app_flash(OpenCR::FLASH_SECTORS,
+                              sizeof(OpenCR::FLASH_SECTORS) /
+                                  sizeof(OpenCR::FLASH_SECTORS[0]),
+                              OpenCR::APP_START_SECTOR);
+  LibXR::USB::DfuBootloaderClassT<1024> dfu(app_flash, 0, OpenCR::APP_SIZE,
+                                            OpenCR::APP_SEAL_OFFSET, nullptr,
+                                            nullptr, true, "OpenCR App DFU");
+
+  static constexpr auto lang_pack = LibXR::USB::DescriptorStrings::MakeLanguagePack(
+      LibXR::USB::DescriptorStrings::Language::EN_US, "XRobot", "OpenCR Bootloader",
+      "OPENCR-BL-");
+
+  LibXR::STM32USBDeviceOtgFS usb_fs(
+      &hpcd_USB_OTG_FS, 256, {ep0_out_buf}, {{ep0_in_buf, 64}},
+      LibXR::USB::DeviceDescriptor::PacketSize0::SIZE_64, 0x1D50, 0x619A, 0x100,
+      {&lang_pack}, {{&dfu}}, {reinterpret_cast<void*>(UID_BASE), 12});
+
+  usb_fs.Init(false);
+  usb_fs.Start(false);
+
+  while (true)
+  {
+    HAL_IWDG_Refresh(&hiwdg);
+    dfu.Process();
+
+    if (dfu.HasValidImage())
+    {
+      SetStatusLed(GPIO_PIN_RESET, GPIO_PIN_SET, GPIO_PIN_SET, GPIO_PIN_SET,
+                   GPIO_PIN_SET);
+    }
+    else
+    {
+      SetStatusLed(GPIO_PIN_SET, GPIO_PIN_SET, GPIO_PIN_SET, GPIO_PIN_SET,
+                   GPIO_PIN_SET);
+    }
+
+    if (dfu.TryConsumeAppLaunch(HAL_GetTick()) && AppVectorIsValid())
+    {
+      JumpToAppNow();
+    }
+
+    LibXR::Thread::Sleep(10);
+  }
+}
