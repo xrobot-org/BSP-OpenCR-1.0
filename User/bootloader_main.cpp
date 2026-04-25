@@ -3,7 +3,6 @@
 #include "dfu/dfu.hpp"
 #include "libxr.hpp"
 #include "main.h"
-#include "opencr_flash_layout.hpp"
 #include "stm32_flash.hpp"
 #include "stm32_timebase.hpp"
 #include "stm32_usb_dev.hpp"
@@ -17,9 +16,21 @@ namespace
 
 constexpr uint32_t RAM_BASE = 0x20000000u;
 constexpr uint32_t RAM_END = 0x20050000u;
+constexpr uint32_t APP_BASE = 0x08020000u;
+constexpr uint32_t APP_SIZE = 0x000E0000u;
+constexpr uint32_t APP_SEAL_OFFSET = 0x000C0000u;
+constexpr size_t APP_START_SECTOR = 5u;
 constexpr uint32_t APP_FLASH_END = 0x08100000u;
+constexpr LibXR::FlashSector FLASH_SECTORS[] = {
+    {0x08000000u, 0x00008000u}, {0x08008000u, 0x00008000u},
+    {0x08010000u, 0x00008000u}, {0x08018000u, 0x00008000u},
+    {0x08020000u, 0x00020000u}, {0x08040000u, 0x00040000u},
+    {0x08080000u, 0x00040000u}, {0x080C0000u, 0x00040000u},
+};
 uint8_t ep0_in_buf[64];
 uint8_t ep0_out_buf[64];
+
+void JumpToAppThunk(void*);
 
 void SetStatusLed(GPIO_PinState led1, GPIO_PinState led2, GPIO_PinState led3,
                   GPIO_PinState led4, GPIO_PinState status)
@@ -33,10 +44,10 @@ void SetStatusLed(GPIO_PinState led1, GPIO_PinState led2, GPIO_PinState led3,
 
 bool AppVectorIsValid()
 {
-  const auto stack = *reinterpret_cast<const uint32_t*>(OpenCR::APP_BASE);
-  const auto reset = *reinterpret_cast<const uint32_t*>(OpenCR::APP_BASE + 4u);
+  const auto stack = *reinterpret_cast<const uint32_t*>(APP_BASE);
+  const auto reset = *reinterpret_cast<const uint32_t*>(APP_BASE + 4u);
   return (stack >= RAM_BASE && stack <= RAM_END && (stack % 4u) == 0u &&
-          reset >= OpenCR::APP_BASE && reset < APP_FLASH_END && (reset & 1u) == 1u);
+          reset >= APP_BASE && reset < APP_FLASH_END && (reset & 1u) == 1u);
 }
 
 void BoardDeinit()
@@ -67,7 +78,7 @@ void BoardDeinit()
 
 [[noreturn]] void JumpToAppNow()
 {
-  const auto app_base = OpenCR::APP_BASE;
+  const auto app_base = APP_BASE;
 
   BoardDeinit();
 
@@ -94,6 +105,11 @@ void BoardDeinit()
   while (true) {}
 }
 
+void JumpToAppThunk(void*)
+{
+  JumpToAppNow();
+}
+
 }  // namespace
 
 extern "C" void app_main(void)
@@ -101,12 +117,13 @@ extern "C" void app_main(void)
   LibXR::STM32TimerTimebase timebase(&htim13);
   LibXR::PlatformInit();
 
-  LibXR::STM32Flash app_flash(OpenCR::FLASH_SECTORS,
-                              sizeof(OpenCR::FLASH_SECTORS) /
-                                  sizeof(OpenCR::FLASH_SECTORS[0]),
-                              OpenCR::APP_START_SECTOR);
-  LibXR::USB::DfuBootloaderClassT<1024> dfu(app_flash, 0, OpenCR::APP_SIZE,
-                                            OpenCR::APP_SEAL_OFFSET, nullptr,
+  LibXR::STM32Flash app_flash(FLASH_SECTORS,
+                              sizeof(FLASH_SECTORS) /
+                                  sizeof(FLASH_SECTORS[0]),
+                              APP_START_SECTOR);
+  LibXR::USB::DfuBootloaderClassT<1024> dfu(app_flash, 0, APP_SIZE,
+                                            APP_SEAL_OFFSET,
+                                            JumpToAppThunk,
                                             nullptr, true, "OpenCR App DFU");
 
   static constexpr auto lang_pack = LibXR::USB::DescriptorStrings::MakeLanguagePack(

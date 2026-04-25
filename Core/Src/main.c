@@ -85,6 +85,9 @@ void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void app_main(void);
+#ifndef OPENCR_IMAGE_bootloader
+void STM32F7TimerPWM_OnPeriodElapsed(TIM_HandleTypeDef *htim);
+#endif
 
 /* USER CODE END PFP */
 
@@ -789,7 +792,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-
+#ifndef OPENCR_IMAGE_bootloader
+  STM32F7TimerPWM_OnPeriodElapsed(htim);
+#endif
   /* USER CODE END Callback 1 */
 }
 
