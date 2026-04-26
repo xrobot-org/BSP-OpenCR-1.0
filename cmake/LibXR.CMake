@@ -2,7 +2,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(OPENCR_IMAGE STREQUAL "bootloader")
-    set(LIBXR_SYSTEM none)
+    set(LIBXR_SYSTEM FreeRTOS)
 else()
     set(LIBXR_SYSTEM FreeRTOS)
 endif()

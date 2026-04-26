@@ -43,6 +43,8 @@ extern UART_HandleTypeDef huart3;
 /* DMA Resources */
 static uint16_t adc1_buf[32] __attribute__((section(".dma_buffer")));
 static uint16_t adc3_buf[16] __attribute__((section(".dma_buffer")));
+static uint8_t spi1_tx_buf[32] __attribute__((section(".dma_buffer")));
+static uint8_t spi1_rx_buf[32] __attribute__((section(".dma_buffer")));
 static uint8_t usart2_tx_buf[128] __attribute__((section(".dma_buffer")));
 static uint8_t usart2_rx_buf[128] __attribute__((section(".dma_buffer")));
 static uint8_t usart3_tx_buf[128] __attribute__((section(".dma_buffer")));
@@ -92,7 +94,7 @@ extern "C" void app_main(void) {
   UNUSED(adc3_adc_channel_10);
 
 
-  STM32SPI spi1(&hspi1, {nullptr, 0}, {nullptr, 0}, 3);
+  STM32SPI spi1(&hspi1, spi1_rx_buf, spi1_tx_buf, 3);
 
   STM32UART usart2(&huart2,
               usart2_rx_buf, usart2_tx_buf, 5);
@@ -161,6 +163,7 @@ extern "C" void app_main(void) {
   /* User Code Begin 3 */
   STM32F7TimerPWM pwm_buzzer(&htim1, BUZZER_SIG_GPIO_Port, BUZZER_SIG_Pin);
   peripherals.Register(LibXR::Entry<LibXR::PWM>{pwm_buzzer, {"pwm_buzzer"}});
+
   XRobotMain(peripherals);
   /* User Code End 3 */
 }

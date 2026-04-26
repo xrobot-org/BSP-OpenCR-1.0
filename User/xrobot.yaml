@@ -1,4 +1,4 @@
-modules:
+﻿modules:
 - id: blink_led
   name: BlinkLED
   constructor_args:
@@ -9,3 +9,20 @@ modules:
     alarm_freq: 1500
     alarm_duration: 80
     alarm_delay: 80
+- id: imu
+  name: ICM20948
+  constructor_args:
+    data_rate: ICM20948::DataRate::DATA_RATE_1KHZ
+    accl_range: ICM20948::AcclRange::RANGE_16G
+    gyro_range: ICM20948::GyroRange::DPS_2000
+    rotation:
+      w: 1.0
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    gyro_topic_name: "icm20948_gyro"
+    accl_topic_name: "icm20948_accl"
+    task_stack_depth: 2048
+    spi_name: "spi1"
+    cs_pin_name: "IMU_CS"
+    int_pin_name: "IMU_INT"

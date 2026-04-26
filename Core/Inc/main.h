@@ -65,6 +65,7 @@ void Error_Handler(void);
 #define SW2_GPIO_Port GPIOE
 #define IMU_INT_Pin GPIO_PIN_1
 #define IMU_INT_GPIO_Port GPIOA
+#define IMU_INT_EXTI_IRQn EXTI1_IRQn
 #define IMU_CS_Pin GPIO_PIN_4
 #define IMU_CS_GPIO_Port GPIOA
 #define BUZZER_SIG_Pin GPIO_PIN_14
@@ -73,10 +74,12 @@ void Error_Handler(void);
 #define DXL_PWR_EN_GPIO_Port GPIOF
 #define KEY1_Pin GPIO_PIN_3
 #define KEY1_GPIO_Port GPIOG
+#define KEY1_EXTI_IRQn EXTI3_IRQn
 #define DXL_DIR_Pin GPIO_PIN_9
 #define DXL_DIR_GPIO_Port GPIOC
 #define KEY2_Pin GPIO_PIN_12
 #define KEY2_GPIO_Port GPIOC
+#define KEY2_EXTI_IRQn EXTI15_10_IRQn
 #define LED_RUN_Pin GPIO_PIN_9
 #define LED_RUN_GPIO_Port GPIOG
 #define LED4_Pin GPIO_PIN_10

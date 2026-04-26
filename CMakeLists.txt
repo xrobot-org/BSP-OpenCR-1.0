@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+﻿cmake_minimum_required(VERSION 3.22)
 
 #
 # This file is generated only once,
@@ -63,6 +63,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     ${CMAKE_CURRENT_SOURCE_DIR}/Modules/BuzzerAlarm
     ${CMAKE_CURRENT_SOURCE_DIR}/Modules/BlinkLED
+    ${CMAKE_CURRENT_SOURCE_DIR}/Modules/ICM20948
 )
 
 # Add project symbols (macros)
@@ -89,3 +90,4 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
 # Add LibXR
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/LibXR.CMake)
+

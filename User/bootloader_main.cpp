@@ -50,8 +50,10 @@ bool AppVectorIsValid()
           reset >= APP_BASE && reset < APP_FLASH_END && (reset & 1u) == 1u);
 }
 
-void BoardDeinit()
+[[noreturn]] void JumpToAppNow()
 {
+  const auto app_base = APP_BASE;
+
   HAL_PCD_Stop(&hpcd_USB_OTG_FS);
   HAL_PCD_DeInit(&hpcd_USB_OTG_FS);
 
@@ -74,14 +76,6 @@ void BoardDeinit()
 
   __DSB();
   __ISB();
-}
-
-[[noreturn]] void JumpToAppNow()
-{
-  const auto app_base = APP_BASE;
-
-  BoardDeinit();
-
   __set_CONTROL(0u);
   __set_BASEPRI(0u);
   __set_FAULTMASK(0u);
