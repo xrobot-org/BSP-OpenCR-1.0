@@ -7,7 +7,7 @@
 **  Author		: STM32CubeMX
 **
 **  Abstract    : Linker script for STM32F746ZGTx series
-**                1024Kbytes FLASH and 320Kbytes RAM
+**                128Kbytes APP FLASH minus 16-byte DFU seal and 320Kbytes RAM
 **
 **                Set heap size, stack size and stack location according
 **                to application requirements.
@@ -57,7 +57,7 @@ MEMORY
 {
 DTCMRAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 64K
 RAM (xrw)      : ORIGIN = 0x20010000, LENGTH = 256K
-FLASH (rx)      : ORIGIN = 0x8020000, LENGTH = 896K
+FLASH (rx)      : ORIGIN = 0x8020000, LENGTH = 0x1FFF0
 }
 
 /* Highest address of the user mode stack */
