@@ -124,6 +124,14 @@ extern "C" void app_main(void) {
   STM32Watchdog iwdg(&hiwdg, 1000, 250);
 
   /* Terminal Configuration */
+  STDIO::read_ = usb_otg_fs_cdc.read_port_;
+  STDIO::write_ = usb_otg_fs_cdc.write_port_;
+
+  RamFS ramfs("XRobot");
+  Terminal<32, 32, 5, 5> terminal(ramfs);
+  LibXR::Thread term_thread;
+  term_thread.Create(&terminal, terminal.ThreadFun, "terminal", 1024,
+                     static_cast<LibXR::Thread::Priority>(3));
 
   iwdg.Feed();
   auto iwdg_task = Timer::CreateTask(iwdg.TaskFun, reinterpret_cast<LibXR::Watchdog *>(&iwdg), 250);
@@ -155,7 +163,9 @@ extern "C" void app_main(void) {
     LibXR::Entry<LibXR::UART>({usart3, {"usart3"}}),
     LibXR::Entry<LibXR::CAN>({can2, {"can2"}}),
     LibXR::Entry<LibXR::UART>({usb_otg_fs_cdc, {"usb_otg_fs_cdc"}}),
-    LibXR::Entry<LibXR::Watchdog>({iwdg, {"iwdg"}})
+    LibXR::Entry<LibXR::Watchdog>({iwdg, {"iwdg"}}),
+    LibXR::Entry<LibXR::RamFS>({ramfs, {"ramfs"}}),
+    LibXR::Entry<LibXR::Terminal<32, 32, 5, 5>>({terminal, {"terminal"}})
   };
 
   // clang-format on
@@ -163,6 +173,11 @@ extern "C" void app_main(void) {
   /* User Code Begin 3 */
   STM32F7TimerPWM pwm_buzzer(&htim1, BUZZER_SIG_GPIO_Port, BUZZER_SIG_Pin);
   peripherals.Register(LibXR::Entry<LibXR::PWM>{pwm_buzzer, {"pwm_buzzer"}});
+
+  // Default STM32Flash tail-sector selection maps to sectors 6 and 7 on STM32F746ZG.
+  STM32Flash flash(FLASH_SECTORS, FLASH_SECTOR_NUMBER);
+  LibXR::DatabaseRaw<1> database(flash);
+  peripherals.Register(LibXR::Entry<LibXR::Database>{database, {"database"}});
 
   XRobotMain(peripherals);
   /* User Code End 3 */
