@@ -26,3 +26,12 @@
     spi_name: "spi1"
     cs_pin_name: "IMU_CS"
     int_pin_name: "IMU_INT"
+- id: ahrs
+  name: MadgwickAHRS
+  constructor_args:
+    beta: 0.05
+    gyro_topic_name: "icm20948_gyro"
+    accl_topic_name: "icm20948_accl"
+    quaternion_topic_name: "ahrs_quaternion"
+    euler_topic_name: "ahrs_euler"
+    task_stack_depth: 2048

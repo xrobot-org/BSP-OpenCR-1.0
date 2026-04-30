@@ -24,7 +24,20 @@
 using namespace LibXR;
 
 /* User Code Begin 1 */
+#include "dfu/dfu.hpp"
 #include "stm32f7_timer_pwm.hpp"
+
+static uint8_t usb_otg_fs_ep0_in_buf[64];
+static uint8_t usb_otg_fs_ep0_out_buf[64];
+static uint8_t usb_otg_fs_ep1_in_buf[128];
+static uint8_t usb_otg_fs_ep1_out_buf[128];
+static uint8_t usb_otg_fs_ep2_in_buf[16];
+
+static void OpenCRRuntimeDfuJump(void*) { NVIC_SystemReset(); }
+
+static void OpenCRRuntimeDfuProcess(LibXR::USB::DfuRuntimeClass* dfu_runtime) {
+  dfu_runtime->Process();
+}
 /* User Code End 1 */
 // NOLINTBEGIN
 // clang-format off
@@ -49,11 +62,6 @@ static uint8_t usart2_tx_buf[128] __attribute__((section(".dma_buffer")));
 static uint8_t usart2_rx_buf[128] __attribute__((section(".dma_buffer")));
 static uint8_t usart3_tx_buf[128] __attribute__((section(".dma_buffer")));
 static uint8_t usart3_rx_buf[128] __attribute__((section(".dma_buffer")));
-static uint8_t usb_otg_fs_ep0_in_buf[64];
-static uint8_t usb_otg_fs_ep0_out_buf[64];
-static uint8_t usb_otg_fs_ep1_in_buf[128];
-static uint8_t usb_otg_fs_ep1_out_buf[128];
-static uint8_t usb_otg_fs_ep2_in_buf[16];
 
 extern "C" void app_main(void) {
   // clang-format on
@@ -104,24 +112,7 @@ extern "C" void app_main(void) {
 
   STM32CAN can2(&hcan2, 5);
 
-  static constexpr auto USB_OTG_FS_LANG_PACK = LibXR::USB::DescriptorStrings::MakeLanguagePack(LibXR::USB::DescriptorStrings::Language::EN_US, "XRobot", "STM32 XRUSB USB_OTG_FS CDC Demo", "XRUSB-DEMO-");
-  LibXR::USB::CDCUart usb_otg_fs_cdc(128, 128, 3);
-
-  STM32USBDeviceOtgFS usb_fs(
-      &hpcd_USB_OTG_FS,
-      256,
-      {usb_otg_fs_ep0_out_buf, usb_otg_fs_ep1_out_buf},
-      {{usb_otg_fs_ep0_in_buf, 64}, {usb_otg_fs_ep1_in_buf, 128}, {usb_otg_fs_ep2_in_buf, 16}},
-      USB::DeviceDescriptor::PacketSize0::SIZE_64,
-      0x1D50, 0x6199, 0x100,
-      {&USB_OTG_FS_LANG_PACK},
-      {{&usb_otg_fs_cdc}},
-      {reinterpret_cast<void *>(UID_BASE), 12}
-  );
-  usb_fs.Init(false);
-  usb_fs.Start(false);
-
-  STM32Watchdog iwdg(&hiwdg, 1000, 250);
+  STM32Watchdog iwdg(&hiwdg, 5000, 250);
 
   /* Terminal Configuration */
 
@@ -154,15 +145,58 @@ extern "C" void app_main(void) {
     LibXR::Entry<LibXR::UART>({usart2, {"usart2"}}),
     LibXR::Entry<LibXR::UART>({usart3, {"usart3"}}),
     LibXR::Entry<LibXR::CAN>({can2, {"can2"}}),
-    LibXR::Entry<LibXR::UART>({usb_otg_fs_cdc, {"usb_otg_fs_cdc"}}),
     LibXR::Entry<LibXR::Watchdog>({iwdg, {"iwdg"}})
   };
 
   // clang-format on
   // NOLINTEND
   /* User Code Begin 3 */
+  static constexpr auto USB_OTG_FS_LANG_PACK = LibXR::USB::DescriptorStrings::MakeLanguagePack(
+      LibXR::USB::DescriptorStrings::Language::EN_US, "XRobot",
+      "STM32 XRUSB USB_OTG_FS CDC Demo", "XRUSB-DEMO-");
+  LibXR::USB::CDCUart usb_otg_fs_cdc(128, 128, 3);
+  LibXR::USB::DfuRuntimeClass usb_otg_fs_dfu_runtime(
+      OpenCRRuntimeDfuJump, nullptr, 50, "OpenCR Runtime DFU");
+
+  STM32USBDeviceOtgFS usb_fs(
+      &hpcd_USB_OTG_FS, 256,
+      {usb_otg_fs_ep0_out_buf, usb_otg_fs_ep1_out_buf},
+      {{usb_otg_fs_ep0_in_buf, 64},
+       {usb_otg_fs_ep1_in_buf, 128},
+       {usb_otg_fs_ep2_in_buf, 16}},
+      USB::DeviceDescriptor::PacketSize0::SIZE_64, 0x1D50, 0x6199, 0x100,
+      {&USB_OTG_FS_LANG_PACK}, {{&usb_otg_fs_cdc, &usb_otg_fs_dfu_runtime}},
+      {reinterpret_cast<void*>(UID_BASE), 12});
+  usb_fs.Init(false);
+  usb_fs.Start(false);
+
+  auto dfu_runtime_task = Timer::CreateTask(OpenCRRuntimeDfuProcess,
+                                            &usb_otg_fs_dfu_runtime, 10);
+  Timer::Add(dfu_runtime_task);
+  Timer::Start(dfu_runtime_task);
+
+  STDIO::read_ = usb_otg_fs_cdc.read_port_;
+  STDIO::write_ = usb_otg_fs_cdc.write_port_;
+
+  RamFS ramfs("XRobot");
+  Terminal<32, 32, 5, 5> terminal(ramfs);
+  LibXR::Thread term_thread;
+  term_thread.Create(&terminal, terminal.ThreadFun, "terminal", 2048,
+                     static_cast<LibXR::Thread::Priority>(3));
+
+  peripherals.Register(LibXR::Entry<LibXR::UART>{usb_otg_fs_cdc,
+                                                 {"usb_otg_fs_cdc"}});
+  peripherals.Register(LibXR::Entry<LibXR::RamFS>{ramfs, {"ramfs"}});
+  peripherals.Register(LibXR::Entry<LibXR::Terminal<32, 32, 5, 5>>{
+      terminal, {"terminal"}});
+
   STM32F7TimerPWM pwm_buzzer(&htim1, BUZZER_SIG_GPIO_Port, BUZZER_SIG_Pin);
   peripherals.Register(LibXR::Entry<LibXR::PWM>{pwm_buzzer, {"pwm_buzzer"}});
+
+  // Use physical sectors 6 and 7. The app seal lives at the end of sector 5.
+  STM32Flash flash(FLASH_SECTORS, FLASH_SECTOR_NUMBER, 7);
+  LibXR::DatabaseRaw<1> database(flash);
+  peripherals.Register(LibXR::Entry<LibXR::Database>{database, {"database"}});
 
   XRobotMain(peripherals);
   /* User Code End 3 */

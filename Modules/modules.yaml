@@ -1,3 +1,5 @@
-﻿modules:
+modules:
 - xrobot-org/BlinkLED
 - xrobot-org/BuzzerAlarm
+- xrobot-org/MadgwickAHRS
+- xrobot-org/ICM20948

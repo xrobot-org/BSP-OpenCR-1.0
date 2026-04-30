@@ -16,11 +16,11 @@ namespace
 
 constexpr uint32_t RAM_BASE = 0x20000000u;
 constexpr uint32_t RAM_END = 0x20050000u;
-constexpr uint32_t APP_BASE = 0x08020000u;
-constexpr uint32_t APP_SIZE = 0x000E0000u;
-constexpr uint32_t APP_SEAL_OFFSET = 0x000C0000u;
-constexpr size_t APP_START_SECTOR = 5u;
-constexpr uint32_t APP_FLASH_END = 0x08100000u;
+constexpr uint32_t APP_BASE = 0x08040000u;
+constexpr uint32_t APP_SIZE = 0x00040000u;
+constexpr uint32_t APP_SEAL_OFFSET = 0x0003FFF0u;
+constexpr size_t APP_START_SECTOR = 6u;
+constexpr uint32_t APP_FLASH_END = APP_BASE + APP_SEAL_OFFSET;
 constexpr LibXR::FlashSector FLASH_SECTORS[] = {
     {0x08000000u, 0x00008000u}, {0x08008000u, 0x00008000u},
     {0x08010000u, 0x00008000u}, {0x08018000u, 0x00008000u},
@@ -50,10 +50,8 @@ bool AppVectorIsValid()
           reset >= APP_BASE && reset < APP_FLASH_END && (reset & 1u) == 1u);
 }
 
-[[noreturn]] void JumpToAppNow()
+void BoardDeinit()
 {
-  const auto app_base = APP_BASE;
-
   HAL_PCD_Stop(&hpcd_USB_OTG_FS);
   HAL_PCD_DeInit(&hpcd_USB_OTG_FS);
 
@@ -76,6 +74,14 @@ bool AppVectorIsValid()
 
   __DSB();
   __ISB();
+}
+
+[[noreturn]] void JumpToAppNow()
+{
+  const auto app_base = APP_BASE;
+
+  BoardDeinit();
+
   __set_CONTROL(0u);
   __set_BASEPRI(0u);
   __set_FAULTMASK(0u);
@@ -118,7 +124,7 @@ extern "C" void app_main(void)
   LibXR::USB::DfuBootloaderClassT<1024> dfu(app_flash, 0, APP_SIZE,
                                             APP_SEAL_OFFSET,
                                             JumpToAppThunk,
-                                            nullptr, true, "OpenCR App DFU");
+                                            nullptr, false, "OpenCR App DFU");
 
   static constexpr auto lang_pack = LibXR::USB::DescriptorStrings::MakeLanguagePack(
       LibXR::USB::DescriptorStrings::Language::EN_US, "XRobot", "OpenCR Bootloader",
