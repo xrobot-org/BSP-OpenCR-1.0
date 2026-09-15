@@ -1,5 +1,8 @@
 #include <cstdint>
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #include "dfu/dfu.hpp"
 #include "libxr.hpp"
 #include "main.h"
@@ -52,6 +55,8 @@ bool AppVectorIsValid()
 
 void BoardDeinit()
 {
+  // Keep the priority-zero HAL timebase alive, but prevent RTOS task switches.
+  taskENTER_CRITICAL();
   HAL_PCD_Stop(&hpcd_USB_OTG_FS);
   HAL_PCD_DeInit(&hpcd_USB_OTG_FS);
 
@@ -65,6 +70,7 @@ void BoardDeinit()
   SysTick->CTRL = 0u;
   SysTick->LOAD = 0u;
   SysTick->VAL = 0u;
+  SCB->ICSR = SCB_ICSR_PENDSTCLR_Msk | SCB_ICSR_PENDSVCLR_Msk;
 
   for (uint32_t i = 0u; i < 8u; ++i)
   {
@@ -76,33 +82,30 @@ void BoardDeinit()
   __ISB();
 }
 
+// No compiler frame may be accessed after changing PSP/MSP selection.
+[[noreturn]] __attribute__((naked, noinline)) void JumpToAppVector(uint32_t)
+{
+  asm volatile(
+      "ldr r1, [r0, #0]    \n"
+      "ldr r2, [r0, #4]    \n"
+      "movs r3, #0         \n"
+      "msr control, r3     \n"
+      "msr basepri, r3     \n"
+      "msr faultmask, r3   \n"
+      "msr msp, r1         \n"
+      "dsb                 \n"
+      "isb                 \n"
+      "cpsie i             \n"
+      "bx r2               \n");
+}
+
 [[noreturn]] void JumpToAppNow()
 {
-  const auto app_base = APP_BASE;
-
   BoardDeinit();
-
-  __set_CONTROL(0u);
-  __set_BASEPRI(0u);
-  __set_FAULTMASK(0u);
-  __ISB();
-
-  SCB->VTOR = app_base;
+  SCB->VTOR = APP_BASE;
   __DSB();
   __ISB();
-  __enable_irq();
-
-  asm volatile(
-      "ldr r0, [%0, #0]    \n"
-      "msr msp, r0         \n"
-      "isb                 \n"
-      "ldr r0, [%0, #4]    \n"
-      "bx  r0              \n"
-      :
-      : "r"(app_base)
-      : "r0");
-
-  while (true) {}
+  JumpToAppVector(APP_BASE);
 }
 
 void JumpToAppThunk(void*)

@@ -154,7 +154,9 @@ extern "C" void app_main(void) {
   static constexpr auto USB_OTG_FS_LANG_PACK = LibXR::USB::DescriptorStrings::MakeLanguagePack(
       LibXR::USB::DescriptorStrings::Language::EN_US, "XRobot",
       "STM32 XRUSB USB_OTG_FS CDC Demo", "XRUSB-DEMO-");
-  LibXR::USB::CDCUart usb_otg_fs_cdc(128, 128, 3);
+  using EPNumber = LibXR::USB::Endpoint::EPNumber;
+  LibXR::USB::CDCUart usb_otg_fs_cdc(EPNumber::EP1, EPNumber::EP1,
+                                    EPNumber::EP2, 128, 128, 3);
   LibXR::USB::DfuRuntimeClass usb_otg_fs_dfu_runtime(
       OpenCRRuntimeDfuJump, nullptr, 50, "OpenCR Runtime DFU");
 
