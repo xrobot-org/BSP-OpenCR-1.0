@@ -4,7 +4,4 @@ mx.scratch
 .history/**
 
 # External XRobot module worktrees are recreated from Modules/modules.yaml.
-Modules/BlinkLED/
-Modules/BuzzerAlarm/
-Modules/MadgwickAHRS/
-Modules/ICM20948/
+Modules/*/

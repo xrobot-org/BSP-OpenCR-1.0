@@ -18,7 +18,6 @@
 #include "stm32_usb_dev.hpp"
 #include "stm32_watchdog.hpp"
 #include "flash_map.hpp"
-#include "app_framework.hpp"
 #include "xrobot_main.hpp"
 
 using namespace LibXR;
@@ -54,14 +53,85 @@ extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 
 /* DMA Resources */
-static uint16_t adc1_buf[32] __attribute__((section(".dma_buffer")));
-static uint16_t adc3_buf[16] __attribute__((section(".dma_buffer")));
-static uint8_t spi1_tx_buf[32] __attribute__((section(".dma_buffer")));
-static uint8_t spi1_rx_buf[32] __attribute__((section(".dma_buffer")));
-static uint8_t usart2_tx_buf[128] __attribute__((section(".dma_buffer")));
-static uint8_t usart2_rx_buf[128] __attribute__((section(".dma_buffer")));
-static uint8_t usart3_tx_buf[128] __attribute__((section(".dma_buffer")));
-static uint8_t usart3_rx_buf[128] __attribute__((section(".dma_buffer")));
+#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
+#if defined(__SCB_DCACHE_LINE_SIZE)
+#define XR_DCACHE_LINE_SIZE __SCB_DCACHE_LINE_SIZE
+#else
+#define XR_DCACHE_LINE_SIZE 32U
+#endif
+#endif
+#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
+static struct alignas(XR_DCACHE_LINE_SIZE)
+{
+  uint16_t data[32];
+} adc1_buf_storage __attribute__((section(".dma_buffer")));
+static constexpr auto& adc1_buf = adc1_buf_storage.data;
+#else
+alignas(4) static uint16_t adc1_buf[32] __attribute__((section(".dma_buffer")));
+#endif
+#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
+static struct alignas(XR_DCACHE_LINE_SIZE)
+{
+  uint16_t data[16];
+} adc3_buf_storage __attribute__((section(".dma_buffer")));
+static constexpr auto& adc3_buf = adc3_buf_storage.data;
+#else
+alignas(4) static uint16_t adc3_buf[16] __attribute__((section(".dma_buffer")));
+#endif
+#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
+static struct alignas(XR_DCACHE_LINE_SIZE)
+{
+  uint8_t data[32];
+} spi1_tx_buf_storage __attribute__((section(".dma_buffer")));
+static constexpr auto& spi1_tx_buf = spi1_tx_buf_storage.data;
+#else
+alignas(4) static uint8_t spi1_tx_buf[32] __attribute__((section(".dma_buffer")));
+#endif
+#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
+static struct alignas(XR_DCACHE_LINE_SIZE)
+{
+  uint8_t data[32];
+} spi1_rx_buf_storage __attribute__((section(".dma_buffer")));
+static constexpr auto& spi1_rx_buf = spi1_rx_buf_storage.data;
+#else
+alignas(4) static uint8_t spi1_rx_buf[32] __attribute__((section(".dma_buffer")));
+#endif
+#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
+static struct alignas(XR_DCACHE_LINE_SIZE)
+{
+  uint8_t data[128];
+} usart2_tx_buf_storage __attribute__((section(".dma_buffer")));
+static constexpr auto& usart2_tx_buf = usart2_tx_buf_storage.data;
+#else
+alignas(4) static uint8_t usart2_tx_buf[128] __attribute__((section(".dma_buffer")));
+#endif
+#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
+static struct alignas(XR_DCACHE_LINE_SIZE)
+{
+  uint8_t data[128];
+} usart2_rx_buf_storage __attribute__((section(".dma_buffer")));
+static constexpr auto& usart2_rx_buf = usart2_rx_buf_storage.data;
+#else
+alignas(4) static uint8_t usart2_rx_buf[128] __attribute__((section(".dma_buffer")));
+#endif
+#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
+static struct alignas(XR_DCACHE_LINE_SIZE)
+{
+  uint8_t data[128];
+} usart3_tx_buf_storage __attribute__((section(".dma_buffer")));
+static constexpr auto& usart3_tx_buf = usart3_tx_buf_storage.data;
+#else
+alignas(4) static uint8_t usart3_tx_buf[128] __attribute__((section(".dma_buffer")));
+#endif
+#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
+static struct alignas(XR_DCACHE_LINE_SIZE)
+{
+  uint8_t data[128];
+} usart3_rx_buf_storage __attribute__((section(".dma_buffer")));
+static constexpr auto& usart3_rx_buf = usart3_rx_buf_storage.data;
+#else
+alignas(4) static uint8_t usart3_rx_buf[128] __attribute__((section(".dma_buffer")));
+#endif
 
 extern "C" void app_main(void) {
   // clang-format on
@@ -71,82 +141,79 @@ extern "C" void app_main(void) {
   /* User Code End 2 */
   // clang-format off
   // NOLINTBEGIN
-  STM32TimerTimebase timebase(&htim13);
+  static STM32TimerTimebase timebase(&htim13);
   PlatformInit(2, 1024);
-  STM32PowerManager power_manager;
+  static STM32PowerManager power_manager;
 
   /* GPIO Configuration */
-  STM32GPIO IMU_INT(IMU_INT_GPIO_Port, IMU_INT_Pin, EXTI1_IRQn);
-  STM32GPIO IMU_CS(IMU_CS_GPIO_Port, IMU_CS_Pin);
-  STM32GPIO KEY2(KEY2_GPIO_Port, KEY2_Pin, EXTI15_10_IRQn);
-  STM32GPIO DXL_DIR(DXL_DIR_GPIO_Port, DXL_DIR_Pin);
-  STM32GPIO LED3(LED3_GPIO_Port, LED3_Pin);
-  STM32GPIO LED2(LED2_GPIO_Port, LED2_Pin);
-  STM32GPIO SW2(SW2_GPIO_Port, SW2_Pin);
-  STM32GPIO BUZZER_SIG(BUZZER_SIG_GPIO_Port, BUZZER_SIG_Pin);
-  STM32GPIO DXL_PWR_EN(DXL_PWR_EN_GPIO_Port, DXL_PWR_EN_Pin);
-  STM32GPIO LED4(LED4_GPIO_Port, LED4_Pin);
-  STM32GPIO SW1(SW1_GPIO_Port, SW1_Pin);
-  STM32GPIO LED1(LED1_GPIO_Port, LED1_Pin);
-  STM32GPIO KEY1(KEY1_GPIO_Port, KEY1_Pin, EXTI3_IRQn);
-  STM32GPIO LED_RUN(LED_RUN_GPIO_Port, LED_RUN_Pin);
+  static STM32GPIO IMU_INT(IMU_INT_GPIO_Port, IMU_INT_Pin, EXTI1_IRQn);
+  static STM32GPIO IMU_CS(IMU_CS_GPIO_Port, IMU_CS_Pin);
+  static STM32GPIO KEY2(KEY2_GPIO_Port, KEY2_Pin, EXTI15_10_IRQn);
+  static STM32GPIO DXL_DIR(DXL_DIR_GPIO_Port, DXL_DIR_Pin);
+  static STM32GPIO LED3(LED3_GPIO_Port, LED3_Pin);
+  static STM32GPIO LED2(LED2_GPIO_Port, LED2_Pin);
+  static STM32GPIO SW2(SW2_GPIO_Port, SW2_Pin);
+  static STM32GPIO BUZZER_SIG(BUZZER_SIG_GPIO_Port, BUZZER_SIG_Pin);
+  static STM32GPIO DXL_PWR_EN(DXL_PWR_EN_GPIO_Port, DXL_PWR_EN_Pin);
+  static STM32GPIO LED4(LED4_GPIO_Port, LED4_Pin);
+  static STM32GPIO SW1(SW1_GPIO_Port, SW1_Pin);
+  static STM32GPIO LED1(LED1_GPIO_Port, LED1_Pin);
+  static STM32GPIO KEY1(KEY1_GPIO_Port, KEY1_Pin, EXTI3_IRQn);
+  static STM32GPIO LED_RUN(LED_RUN_GPIO_Port, LED_RUN_Pin);
 
-  STM32ADC adc1(&hadc1, adc1_buf, {ADC_CHANNEL_VREFINT, ADC_CHANNEL_VBAT}, 3.3);
-  auto adc1_adc_channel_vrefint = adc1.GetChannel(0);
+  static STM32ADC adc1(&hadc1, adc1_buf, {ADC_CHANNEL_VREFINT, ADC_CHANNEL_VBAT}, 3.3);
+  static auto& adc1_adc_channel_vrefint = adc1.GetChannel(0);
   UNUSED(adc1_adc_channel_vrefint);
-  auto adc1_adc_channel_vbat = adc1.GetChannel(1);
+  static auto& adc1_adc_channel_vbat = adc1.GetChannel(1);
   UNUSED(adc1_adc_channel_vbat);
 
-  STM32ADC adc3(&hadc3, adc3_buf, {ADC_CHANNEL_10}, 3.3);
-  auto adc3_adc_channel_10 = adc3.GetChannel(0);
+  static STM32ADC adc3(&hadc3, adc3_buf, {ADC_CHANNEL_10}, 3.3);
+  static auto& adc3_adc_channel_10 = adc3.GetChannel(0);
   UNUSED(adc3_adc_channel_10);
 
 
-  STM32SPI spi1(&hspi1, spi1_rx_buf, spi1_tx_buf, 3);
+  static STM32SPI spi1(&hspi1, spi1_rx_buf, spi1_tx_buf, 3);
 
-  STM32UART usart2(&huart2,
+  static STM32UART usart2(&huart2,
               usart2_rx_buf, usart2_tx_buf, 5);
 
-  STM32UART usart3(&huart3,
+  static STM32UART usart3(&huart3,
               usart3_rx_buf, usart3_tx_buf, 5);
 
-  STM32CAN can2(&hcan2, 5);
+  static STM32CAN can2(&hcan2, 5);
 
-  STM32Watchdog iwdg(&hiwdg, 5000, 250);
+  static STM32Watchdog iwdg(&hiwdg, 5000, 250);
 
   /* Terminal Configuration */
 
   iwdg.Feed();
-  auto iwdg_task = Timer::CreateTask(iwdg.TaskFun, reinterpret_cast<LibXR::Watchdog *>(&iwdg), 250);
+  static auto iwdg_task = Timer::CreateTask(iwdg.TaskFun, reinterpret_cast<LibXR::Watchdog *>(&iwdg), 250);
   Timer::Add(iwdg_task);
   Timer::Start(iwdg_task);
 
-
-  LibXR::HardwareContainer peripherals{
-    LibXR::Entry<LibXR::PowerManager>({power_manager, {"power_manager"}}),
-    LibXR::Entry<LibXR::GPIO>({IMU_INT, {"IMU_INT"}}),
-    LibXR::Entry<LibXR::GPIO>({IMU_CS, {"IMU_CS"}}),
-    LibXR::Entry<LibXR::GPIO>({KEY2, {"KEY2"}}),
-    LibXR::Entry<LibXR::GPIO>({DXL_DIR, {"DXL_DIR"}}),
-    LibXR::Entry<LibXR::GPIO>({LED3, {"LED3"}}),
-    LibXR::Entry<LibXR::GPIO>({LED2, {"LED2"}}),
-    LibXR::Entry<LibXR::GPIO>({SW2, {"SW2"}}),
-    LibXR::Entry<LibXR::GPIO>({BUZZER_SIG, {"BUZZER_SIG"}}),
-    LibXR::Entry<LibXR::GPIO>({DXL_PWR_EN, {"DXL_PWR_EN"}}),
-    LibXR::Entry<LibXR::GPIO>({LED4, {"LED4"}}),
-    LibXR::Entry<LibXR::GPIO>({SW1, {"SW1"}}),
-    LibXR::Entry<LibXR::GPIO>({LED1, {"LED1"}}),
-    LibXR::Entry<LibXR::GPIO>({KEY1, {"KEY1"}}),
-    LibXR::Entry<LibXR::GPIO>({LED_RUN, {"LED_RUN"}}),
-    LibXR::Entry<LibXR::ADC>({adc1_adc_channel_vrefint, {"adc1_adc_channel_vrefint"}}),
-    LibXR::Entry<LibXR::ADC>({adc1_adc_channel_vbat, {"adc1_adc_channel_vbat"}}),
-    LibXR::Entry<LibXR::ADC>({adc3_adc_channel_10, {"adc3_adc_channel_10"}}),
-    LibXR::Entry<LibXR::SPI>({spi1, {"spi1"}}),
-    LibXR::Entry<LibXR::UART>({usart2, {"usart2"}}),
-    LibXR::Entry<LibXR::UART>({usart3, {"usart3"}}),
-    LibXR::Entry<LibXR::CAN>({can2, {"can2"}}),
-    LibXR::Entry<LibXR::Watchdog>({iwdg, {"iwdg"}})
-  };
+  XR_REGISTER(power_manager, LibXR::PowerManager);
+  XR_REGISTER(IMU_INT, LibXR::GPIO);
+  XR_REGISTER(IMU_CS, LibXR::GPIO);
+  XR_REGISTER(KEY2, LibXR::GPIO);
+  XR_REGISTER(DXL_DIR, LibXR::GPIO);
+  XR_REGISTER(LED3, LibXR::GPIO);
+  XR_REGISTER(LED2, LibXR::GPIO);
+  XR_REGISTER(SW2, LibXR::GPIO);
+  XR_REGISTER(BUZZER_SIG, LibXR::GPIO);
+  XR_REGISTER(DXL_PWR_EN, LibXR::GPIO);
+  XR_REGISTER(LED4, LibXR::GPIO);
+  XR_REGISTER(SW1, LibXR::GPIO);
+  XR_REGISTER(LED1, LibXR::GPIO);
+  XR_REGISTER(KEY1, LibXR::GPIO);
+  XR_REGISTER(LED_RUN, LibXR::GPIO);
+  XR_REGISTER(adc1_adc_channel_vrefint, LibXR::ADC);
+  XR_REGISTER(adc1_adc_channel_vbat, LibXR::ADC);
+  XR_REGISTER(adc3_adc_channel_10, LibXR::ADC);
+  XR_REGISTER(spi1, LibXR::SPI);
+  XR_REGISTER(usart2, LibXR::UART);
+  XR_REGISTER(usart3, LibXR::UART);
+  XR_REGISTER(can2, LibXR::CAN);
+  XR_REGISTER(iwdg, LibXR::Watchdog);
 
   // clang-format on
   // NOLINTEND
@@ -155,12 +222,12 @@ extern "C" void app_main(void) {
       LibXR::USB::DescriptorStrings::Language::EN_US, "XRobot",
       "STM32 XRUSB USB_OTG_FS CDC Demo", "XRUSB-DEMO-");
   using EPNumber = LibXR::USB::Endpoint::EPNumber;
-  LibXR::USB::CDCUart usb_otg_fs_cdc(EPNumber::EP1, EPNumber::EP1,
+  static LibXR::USB::CDCUart usb_otg_fs_cdc(EPNumber::EP1, EPNumber::EP1,
                                     EPNumber::EP2, 128, 128, 3);
-  LibXR::USB::DfuRuntimeClass usb_otg_fs_dfu_runtime(
+  static LibXR::USB::DfuRuntimeClass usb_otg_fs_dfu_runtime(
       OpenCRRuntimeDfuJump, nullptr, 50, "OpenCR Runtime DFU");
 
-  STM32USBDeviceOtgFS usb_fs(
+  static STM32USBDeviceOtgFS usb_fs(
       &hpcd_USB_OTG_FS, 256,
       {usb_otg_fs_ep0_out_buf, usb_otg_fs_ep1_out_buf},
       {{usb_otg_fs_ep0_in_buf, 64},
@@ -172,7 +239,7 @@ extern "C" void app_main(void) {
   usb_fs.Init(false);
   usb_fs.Start(false);
 
-  auto dfu_runtime_task = Timer::CreateTask(OpenCRRuntimeDfuProcess,
+  static auto dfu_runtime_task = Timer::CreateTask(OpenCRRuntimeDfuProcess,
                                             &usb_otg_fs_dfu_runtime, 10);
   Timer::Add(dfu_runtime_task);
   Timer::Start(dfu_runtime_task);
@@ -180,26 +247,22 @@ extern "C" void app_main(void) {
   STDIO::read_ = usb_otg_fs_cdc.read_port_;
   STDIO::write_ = usb_otg_fs_cdc.write_port_;
 
-  RamFS ramfs("XRobot");
-  Terminal<32, 32, 5, 5> terminal(ramfs);
-  LibXR::Thread term_thread;
+  static RamFS ramfs("XRobot");
+  static Terminal<32, 32, 5, 5> terminal(ramfs);
+  static LibXR::Thread term_thread;
   term_thread.Create(&terminal, terminal.ThreadFun, "terminal", 2048,
                      static_cast<LibXR::Thread::Priority>(3));
 
-  peripherals.Register(LibXR::Entry<LibXR::UART>{usb_otg_fs_cdc,
-                                                 {"usb_otg_fs_cdc"}});
-  peripherals.Register(LibXR::Entry<LibXR::RamFS>{ramfs, {"ramfs"}});
-  peripherals.Register(LibXR::Entry<LibXR::Terminal<32, 32, 5, 5>>{
-      terminal, {"terminal"}});
-
-  STM32F7TimerPWM pwm_buzzer(&htim1, BUZZER_SIG_GPIO_Port, BUZZER_SIG_Pin);
-  peripherals.Register(LibXR::Entry<LibXR::PWM>{pwm_buzzer, {"pwm_buzzer"}});
+  static STM32F7TimerPWM pwm_buzzer(&htim1, BUZZER_SIG_GPIO_Port, BUZZER_SIG_Pin);
 
   // Use physical sectors 6 and 7. The app seal lives at the end of sector 5.
-  STM32Flash flash(FLASH_SECTORS, FLASH_SECTOR_NUMBER, 7);
-  LibXR::DatabaseRaw<1> database(flash);
-  peripherals.Register(LibXR::Entry<LibXR::Database>{database, {"database"}});
+  static STM32Flash flash(FLASH_SECTORS, FLASH_SECTOR_NUMBER, 7);
+  static LibXR::DatabaseRaw<1> database(flash);
 
-  XRobotMain(peripherals);
+  XR_REGISTER(usb_otg_fs_cdc, LibXR::UART);
+  XR_REGISTER(ramfs, LibXR::RamFS);
+  XR_REGISTER(pwm_buzzer, LibXR::PWM);
+  XR_REGISTER(database, LibXR::Database);
+  XROBOT_MAIN();
   /* User Code End 3 */
 }

@@ -71,6 +71,7 @@ Peripherals:
           mode: Circular
           priority: Low
           fifo: Disabled
+          direction_full: periph_to_memory
     ADC3:
       ContinuousMode: true
       RegularConversions:
@@ -92,6 +93,7 @@ Peripherals:
           mode: Circular
           priority: Low
           fifo: Disabled
+          direction_full: periph_to_memory
   SPI:
     SPI1:
       BaudRate: 6.75 MBits/s
@@ -110,6 +112,7 @@ Peripherals:
           mode: Normal
           priority: Low
           fifo: Disabled
+          direction_full: periph_to_memory
         dma_tx: &id004
           request_id: '7'
           peripheral: SPI1_TX
@@ -123,6 +126,7 @@ Peripherals:
           mode: Normal
           priority: Low
           fifo: Disabled
+          direction_full: memory_to_periph
       DMA_RX: ENABLE
       DMA_RX_TYPE: DMA
       DMA_TX: ENABLE
@@ -144,6 +148,7 @@ Peripherals:
           mode: Normal
           priority: Low
           fifo: Disabled
+          direction_full: periph_to_memory
         dma_tx: &id006
           request_id: '3'
           peripheral: USART2_TX
@@ -157,6 +162,7 @@ Peripherals:
           mode: Normal
           priority: Low
           fifo: Disabled
+          direction_full: memory_to_periph
       DMA_RX: ENABLE
       DMA_RX_TYPE: DMA
       DMA_TX: ENABLE
@@ -177,6 +183,7 @@ Peripherals:
           mode: Normal
           priority: Low
           fifo: Disabled
+          direction_full: periph_to_memory
         dma_tx: &id008
           request_id: '1'
           peripheral: USART3_TX
@@ -190,6 +197,7 @@ Peripherals:
           mode: Normal
           priority: Low
           fifo: Disabled
+          direction_full: memory_to_periph
       DMA_RX: ENABLE
       DMA_RX_TYPE: DMA
       DMA_TX: ENABLE
@@ -213,15 +221,14 @@ Peripherals:
   I2C: {}
 DMA:
   Requests:
-    '0': USART3_RX
-    '1': USART3_TX
-    '2': USART2_RX
-    '3': USART2_TX
-    '4': ADC3
-    '5': ADC1
-    '6': SPI1_RX
-    '7': SPI1_TX
-    sNb: '8'
+    Dma.Request0: USART3_RX
+    Dma.Request1: USART3_TX
+    Dma.Request2: USART2_RX
+    Dma.Request3: USART2_TX
+    Dma.Request4: ADC3
+    Dma.Request5: ADC1
+    Dma.Request6: SPI1_RX
+    Dma.Request7: SPI1_TX
   Configurations:
     ADC1_5: *id001
     ADC3_4: *id002

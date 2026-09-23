@@ -1,0 +1,54 @@
+version: 1
+requests:
+- id: xrobot-org/BlinkLED
+  ref: same-or-dev
+- id: xrobot-org/BuzzerAlarm
+  ref: same-or-dev
+- id: xrobot-org/ICM20948
+  ref: same-or-dev
+- id: xrobot-org/MadgwickAHRS
+  ref: same-or-dev
+modules:
+  xrobot-org/BlinkLED:
+    repo: https://github.com/xrobot-org/BlinkLED.git
+    source: https://xrobot.work/xrobot-modules/index.yaml
+    requested: same-or-dev
+    resolved_ref: feat/static-assembly-20260915
+    ref_kind: branch
+    context:
+    - branch
+    - feat/static-assembly-20260915
+    commit: 8b76b4cd89c14da0661493d343f3ca3deaf2d04b
+  xrobot-org/BuzzerAlarm:
+    repo: https://github.com/xrobot-org/BuzzerAlarm.git
+    source: https://xrobot.work/xrobot-modules/index.yaml
+    requested: same-or-dev
+    resolved_ref: feat/static-assembly-20260915
+    ref_kind: branch
+    context:
+    - branch
+    - feat/static-assembly-20260915
+    commit: 6e73d640b4ad773184c3d5db5bcb0d29ebe439a8
+  xrobot-org/ICM20948:
+    repo: https://github.com/xrobot-org/ICM20948.git
+    source: https://xrobot.work/xrobot-modules/index.yaml
+    requested: same-or-dev
+    resolved_ref: feat/static-assembly-20260915
+    ref_kind: branch
+    context:
+    - branch
+    - feat/static-assembly-20260915
+    commit: 85c761a3a014a59f92166322c3f1a3b79805b8e0
+  xrobot-org/MadgwickAHRS:
+    repo: https://github.com/xrobot-org/MadgwickAHRS
+    source: https://xrobot.work/xrobot-modules/index.yaml
+    requested: same-or-dev
+    resolved_ref: feat/static-assembly-20260915
+    ref_kind: branch
+    context:
+    - branch
+    - feat/static-assembly-20260915
+    commit: f385280c975baff4045c4ed434de1718b9cff850
+root_context:
+- branch
+- feat/static-assembly-20260915
