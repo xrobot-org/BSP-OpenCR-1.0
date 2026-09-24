@@ -1,8 +1,12 @@
 #pragma once
+// xrobot-stamp: config=xrobot.yaml sha256=caef887f9746f674521ab1ed6a0263b0b62678e1c3c506023497834b88e569e8
+// xrobot-stamp: lock=../xrobot.lock sha256=82695426ce6203c2862d2f2f141c4f4a4aca76ffd1c445a9c7e1bdee7f704edd
+// xrobot-stamp: tool=xrobot 0.3.1
 
 #include <memory>
 #include <type_traits>
 #include <utility>
+#include "libxr.hpp"
 #include "thread.hpp"
 #include "BlinkLED.hpp"
 #include "BuzzerAlarm.hpp"
@@ -16,23 +20,6 @@ struct RegistrationMatches
     : std::bool_constant<(!std::is_reference<Views>::value && ...) &&
                          (std::is_convertible<Source*, Views*>::value && ...)> {};
 
-template <typename> struct MonitorSignature : std::false_type {};
-template <typename T> struct MonitorSignature<void (T::*)()> : std::true_type {};
-template <typename T> struct MonitorSignature<void (T::*)() noexcept> : std::true_type {};
-template <typename T> struct MonitorSignature<void (T::*)() const> : std::true_type {};
-template <typename T> struct MonitorSignature<void (T::*)() const noexcept> : std::true_type {};
-template <typename T> struct MonitorSignature<void (T::*)() &> : std::true_type {};
-template <typename T> struct MonitorSignature<void (T::*)() & noexcept> : std::true_type {};
-template <typename T, typename = void> struct HasMonitor : std::false_type {};
-template <typename T>
-struct HasMonitor<T, std::void_t<decltype(&T::OnMonitor)>>
-    : MonitorSignature<decltype(&T::OnMonitor)> {};
-
-template <typename T> inline void Monitor(T& instance) {
-  if constexpr (HasMonitor<T>::value) {
-    instance.OnMonitor();
-  }
-}
 }  // namespace xrobot_generated
 
 // Force only this entry inline in optimized Clang builds.
@@ -99,11 +86,15 @@ template <typename T> inline void Monitor(T& instance) {
       static_cast<LibXR::RamFS&>(ramfs)
       , xr_arg_ahrs_param
   );
+  static_assert(std::is_void_v<decltype(blink_led.OnMonitor())>, "blink_led.OnMonitor() must return void");
+  static_assert(std::is_void_v<decltype(buzzer_alarm.OnMonitor())>, "buzzer_alarm.OnMonitor() must return void");
+  static_assert(std::is_void_v<decltype(imu.OnMonitor())>, "imu.OnMonitor() must return void");
+  static_assert(std::is_void_v<decltype(ahrs.OnMonitor())>, "ahrs.OnMonitor() must return void");
   for (;;) {
-    ::xrobot_generated::Monitor(blink_led);
-    ::xrobot_generated::Monitor(buzzer_alarm);
-    ::xrobot_generated::Monitor(imu);
-    ::xrobot_generated::Monitor(ahrs);
+    blink_led.OnMonitor();
+    buzzer_alarm.OnMonitor();
+    imu.OnMonitor();
+    ahrs.OnMonitor();
     LibXR::Thread::Sleep(1000);
   }
 }
