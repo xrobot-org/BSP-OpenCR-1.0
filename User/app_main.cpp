@@ -263,6 +263,6 @@ extern "C" void app_main(void) {
   XR_REGISTER(ramfs, LibXR::RamFS);
   XR_REGISTER(pwm_buzzer, LibXR::PWM);
   XR_REGISTER(database, LibXR::Database);
-  XROBOT_MAIN();
   /* User Code End 3 */
+  XROBOT_MAIN();
 }
