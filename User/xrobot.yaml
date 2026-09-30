@@ -3,14 +3,14 @@ modules:
     id: blink_led
     args:
       - led: LED1
-      - blink_cycle: '250'
+      - blink_cycle: 250
   - module: xrobot-org/BuzzerAlarm
     id: buzzer_alarm
     args:
       - pwm: pwm_buzzer
-      - alarm_freq: '1500'
-      - alarm_duration: '80'
-      - alarm_delay: '80'
+      - alarm_freq: 1500
+      - alarm_duration: 80
+      - alarm_delay: 80
   - module: xrobot-org/ICM20948
     id: imu
     args:
@@ -24,19 +24,19 @@ modules:
           accl_range: ICM20948::AcclRange::RANGE_16G
           gyro_range: ICM20948::GyroRange::DPS_2000
           rotation: '{1.0f, 0.0f, 0.0f, 0.0f}'
-          gyro_topic_name: '"icm20948_gyro"'
-          accl_topic_name: '"icm20948_accl"'
-          task_stack_depth: '2048'
+          gyro_topic_name: "icm20948_gyro"
+          accl_topic_name: "icm20948_accl"
+          task_stack_depth: 2048
   - module: xrobot-org/MadgwickAHRS
     id: ahrs
     args:
       - ramfs: ramfs
       - param:
-          beta: '0.05f'
-          gyro_topic_name: '"icm20948_gyro"'
-          accl_topic_name: '"icm20948_accl"'
-          quaternion_topic_name: '"ahrs_quaternion"'
-          euler_topic_name: '"ahrs_euler"'
-          task_stack_depth: '2048'
+          beta: 0.05f
+          gyro_topic_name: "icm20948_gyro"
+          accl_topic_name: "icm20948_accl"
+          quaternion_topic_name: "ahrs_quaternion"
+          euler_topic_name: "ahrs_euler"
+          task_stack_depth: 2048
 settings:
-  monitor_sleep_ms: '1000'
+  monitor_sleep_ms: 1000
