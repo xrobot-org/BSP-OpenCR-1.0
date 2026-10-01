@@ -64,8 +64,8 @@ bootloader 以 USB DFU 设备（"OpenCR App DFU"）接收应用镜像并写入 0
 在 CubeMX 中生成代码后，重新生成 BSP 对象（与 CI 相同的命令）：
 
 ```bash
-xr_parse_ioc -d . -o .config.yaml
-xr_gen_code_stm32 -i .config.yaml -o User/app_main.cpp --xrobot --libxr-config User/libxr_config.yaml
+libxr parse -d . -o .config.yaml
+libxr gen -i .config.yaml -o User/app_main.cpp --xrobot --libxr-config User/libxr_config.yaml
 ```
 
 `User/app_main.cpp` 中 `User Code` 区域的内容会保留。提交 `User/app_main.cpp`、`User/app_main.h`、`User/flash_map.hpp` 和 `User/libxr_config.yaml`；CI 会重新生成并检查它们与提交一致。
