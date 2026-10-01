@@ -39,7 +39,7 @@ xrobot setup                             # 拉取模块、检查配置、生成�
 
 | `OPENCR_IMAGE` | 入口 | 链接脚本 | Preset |
 | --- | --- | --- | --- |
-| `default` | `app_main.cpp` | `STM32F746XX_FLASH.ld`（0x08000000） | `Debug`、`Release` |
+| `default` | `app_main.cpp` | `STM32F746xx_FLASH.ld`（0x08000000） | `Debug`、`Release` |
 | `bootloader` | `bootloader_main.cpp` | `STM32F746XX_BOOTLOADER.ld`（0x08000000，128 KiB） | `BootloaderDebug` |
 | `app` | `app_main.cpp` | `STM32F746XX_APP.ld`（0x08040000） | `AppDebug` |
 
