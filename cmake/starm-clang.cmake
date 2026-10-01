@@ -25,9 +25,19 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 #  "STARM_HYBRID"   : Hybrid configuration using starm-clang Assemler and Compiler and GNU Linker
 #  "STARM_NEWLIB"   : starm-clang toolchain with NEWLIB C library
 #  "STARM_PICOLIBC" : starm-clang toolchain with PICOLIBC C library
-set(STARM_TOOLCHAIN_CONFIG "STARM_PICOLIBC" CACHE STRING "ST Arm Clang runtime profile")
-set_property(CACHE STARM_TOOLCHAIN_CONFIG PROPERTY STRINGS
-             STARM_HYBRID STARM_NEWLIB STARM_PICOLIBC)
+set(STARM_TOOLCHAIN_CONFIG "STARM_PICOLIBC")
+# LibXR: -DSTARM_TOOLCHAIN_CONFIG=<profile> selects the profile of a build
+# directory; a default changed by libxr stm32 toolchain also reaches
+# existing build directories.
+set(_xr_starm_default ${STARM_TOOLCHAIN_CONFIG})
+unset(STARM_TOOLCHAIN_CONFIG)
+if(NOT DEFINED CACHE{STARM_TOOLCHAIN_CONFIG} OR
+   (DEFINED CACHE{XR_STARM_TOOLCHAIN_DEFAULT} AND
+    NOT XR_STARM_TOOLCHAIN_DEFAULT STREQUAL _xr_starm_default))
+  set(STARM_TOOLCHAIN_CONFIG ${_xr_starm_default} CACHE STRING "ST Arm Clang runtime profile" FORCE)
+endif()
+set(XR_STARM_TOOLCHAIN_DEFAULT ${_xr_starm_default} CACHE INTERNAL "Default STARM_TOOLCHAIN_CONFIG of this file")
+set_property(CACHE STARM_TOOLCHAIN_CONFIG PROPERTY STRINGS STARM_HYBRID STARM_NEWLIB STARM_PICOLIBC)
 set(TOOLCHAIN_MULTILIBS "")
 
 if(STARM_TOOLCHAIN_CONFIG STREQUAL "STARM_HYBRID")
