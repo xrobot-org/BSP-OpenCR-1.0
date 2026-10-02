@@ -257,8 +257,9 @@ extern "C" void app_main(void) {
 
   static STM32F7TimerPWM pwm_buzzer(&htim1, BUZZER_SIG_GPIO_Port, BUZZER_SIG_Pin);
 
-  // Use physical sectors 6 and 7. The app seal lives at the end of sector 5.
-  static STM32Flash flash(FLASH_SECTORS, FLASH_SECTOR_NUMBER, 7);
+  // Use physical sectors 6 and 7 (from 0x08080000). The app seal lives at the end of
+  // sector 5.
+  static STM32Flash flash(FLASH_REGIONS, FLASH_REGION_NUMBER, 0x08080000u);
   static LibXR::DatabaseRaw<1> database(flash);
 
   XR_REGISTER(usb_otg_fs_cdc, LibXR::UART);

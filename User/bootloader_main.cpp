@@ -22,13 +22,11 @@ constexpr uint32_t RAM_END = 0x20050000u;
 constexpr uint32_t APP_BASE = 0x08040000u;
 constexpr uint32_t APP_SIZE = 0x00040000u;
 constexpr uint32_t APP_SEAL_OFFSET = 0x0003FFF0u;
-constexpr size_t APP_START_SECTOR = 6u;
 constexpr uint32_t APP_FLASH_END = APP_BASE + APP_SEAL_OFFSET;
-constexpr LibXR::FlashSector FLASH_SECTORS[] = {
-    {0x08000000u, 0x00008000u}, {0x08008000u, 0x00008000u},
-    {0x08010000u, 0x00008000u}, {0x08018000u, 0x00008000u},
-    {0x08020000u, 0x00020000u}, {0x08040000u, 0x00040000u},
-    {0x08080000u, 0x00040000u}, {0x080C0000u, 0x00040000u},
+constexpr LibXR::FlashRegion FLASH_REGIONS[] = {
+    {0x08000000u, 0x00008000u, 4},
+    {0x08020000u, 0x00020000u, 1},
+    {0x08040000u, 0x00040000u, 3},
 };
 uint8_t ep0_in_buf[64];
 uint8_t ep0_out_buf[64];
@@ -120,10 +118,9 @@ extern "C" void app_main(void)
   LibXR::STM32TimerTimebase timebase(&htim13);
   LibXR::PlatformInit();
 
-  LibXR::STM32Flash app_flash(FLASH_SECTORS,
-                              sizeof(FLASH_SECTORS) /
-                                  sizeof(FLASH_SECTORS[0]),
-                              APP_START_SECTOR);
+  LibXR::STM32Flash app_flash(FLASH_REGIONS,
+                              sizeof(FLASH_REGIONS) / sizeof(FLASH_REGIONS[0]),
+                              APP_BASE);
   LibXR::USB::DfuBootloaderClassT<1024> dfu(app_flash, 0, APP_SIZE,
                                             APP_SEAL_OFFSET,
                                             JumpToAppThunk,
