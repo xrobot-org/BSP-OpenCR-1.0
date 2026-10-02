@@ -57,7 +57,7 @@ cmake --build build
 
 bootloader 以 USB DFU 设备（"OpenCR App DFU"）接收应用镜像并写入 0x08040000 起的应用区，然后跳转到应用。
 
-构建前 LibXR 检查 `User/xrobot_main.hpp` 是否比配置、锁文件、入口和模块头文件新，过期时构建失败并提示对应的 `xrobot gen -c <配置>`。修改 `User/xrobot.yaml` 或添加其他 `User/*.yaml` 产品配置的方法见 [项目管理（XRobot）](https://xrobot.work/docs/proj_man)。配置里的硬件名是 `User/app_main.cpp` 中 `XR_REGISTER` 注册的对象名（如 `LED1`、`spi1`、`can2`、`pwm_buzzer`、`database`）。
+构建前 LibXR 检查配置、锁文件、模块头文件和入口源文件中的注册在生成 `User/xrobot_main.hpp` 之后是否有改动，有改动时构建失败并提示对应的 `xrobot gen -c <配置>`。修改 `User/xrobot.yaml` 或添加其他 `User/*.yaml` 产品配置的方法见 [项目管理（XRobot）](https://xrobot.work/docs/proj_man)。配置里的硬件名是 `User/app_main.cpp` 中 `XR_REGISTER` 注册的对象名（如 `LED1`、`spi1`、`can2`、`pwm_buzzer`、`database`）。
 
 ## 修改 CubeMX 配置后
 
