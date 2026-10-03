@@ -14,39 +14,27 @@ modules:
     repo: https://github.com/xrobot-org/BlinkLED.git
     source: https://xrobot.work/xrobot-modules/index.yaml
     requested: same-or-dev
-    resolved_ref: feat/static-assembly-20260915
+    resolved_ref: dev
     ref_kind: branch
-    context:
-    - branch
-    - feat/static-assembly-20260915
     commit: a06688f8b145a197527fa97e56679437b8fc2180
   xrobot-org/BuzzerAlarm:
     repo: https://github.com/xrobot-org/BuzzerAlarm.git
     source: https://xrobot.work/xrobot-modules/index.yaml
     requested: same-or-dev
-    resolved_ref: feat/static-assembly-20260915
+    resolved_ref: dev
     ref_kind: branch
-    context:
-    - branch
-    - feat/static-assembly-20260915
     commit: 44424519645a0d9297d5a7bd57b8dd4e0c342e74
   xrobot-org/ICM20948:
     repo: https://github.com/xrobot-org/ICM20948.git
     source: https://xrobot.work/xrobot-modules/index.yaml
     requested: same-or-dev
-    resolved_ref: feat/static-assembly-20260915
+    resolved_ref: dev
     ref_kind: branch
-    context:
-    - branch
-    - feat/static-assembly-20260915
     commit: 86d93a8da24ea6232af208e8397f6605410162c3
   xrobot-org/MadgwickAHRS:
     repo: https://github.com/xrobot-org/MadgwickAHRS
     source: https://xrobot.work/xrobot-modules/index.yaml
     requested: same-or-dev
-    resolved_ref: feat/static-assembly-20260915
+    resolved_ref: dev
     ref_kind: branch
-    context:
-    - branch
-    - feat/static-assembly-20260915
     commit: 286cc8935c9349c1d5c0446f6f5e957083465ee2
