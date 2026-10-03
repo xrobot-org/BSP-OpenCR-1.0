@@ -98,15 +98,9 @@ After changing and regenerating the code in CubeMX, `libxr stm32 setup` updates 
 
 ## 4. 烧录与运行 / Flash and Run
 
-完整固件（`default`）通过 SWD 下载到 0x08000000，例如：
+`default` 镜像和 `bootloader` 镜像按 0x08000000 链接，`app` 镜像按 0x08040000 链接；bootloader 以 USB DFU 设备（"OpenCR App DFU"）接收 `app` 镜像，写入 0x08040000 起的应用区后跳转到应用。运行后通过 USB CDC 连接终端。
 
-```bash
-STM32_Programmer_CLI --connect port=swd --download build/Debug/OpenCR1.0.elf -hardRst -rst --start
-```
-
-使用 bootloader 时，通过 SWD 下载 `bootloader` 镜像（0x08000000）；`app` 镜像由 bootloader 以 USB DFU 接收并写入 0x08040000 起的应用区，之后 bootloader 跳转到应用。运行后通过 USB CDC 连接终端。
-
-The full firmware (`default`) is downloaded over SWD to 0x08000000, for example with the command above. When using the bootloader, the `bootloader` image is downloaded over SWD (0x08000000); the `app` image is received by the bootloader over USB DFU and written to the application area from 0x08040000, after which the bootloader jumps to the application. At run time the terminal is available over USB CDC.
+The `default` and `bootloader` images are linked for 0x08000000 and the `app` image for 0x08040000; the bootloader receives the `app` image as a USB DFU device ("OpenCR App DFU"), writes it to the application area starting at 0x08040000 and jumps to it. At run time the terminal is available over USB CDC.
 
 本仓库以 Apache-2.0 发布，见 [LICENSE](LICENSE)；随仓库分发的第三方代码的许可见 [NOTICE](NOTICE)。
 
