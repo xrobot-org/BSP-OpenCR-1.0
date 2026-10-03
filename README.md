@@ -88,12 +88,7 @@ Building uses CMake, Ninja and either `starm-clang` (the presets use `cmake/star
 | `bootloader` | `bootloader_main.cpp` | `STM32F746XX_BOOTLOADER.ld` (0x08000000, 128 KiB) | `BootloaderDebug` |
 | `app` | `app_main.cpp` | `STM32F746XX_APP.ld` (0x08040000) | `AppDebug` |
 
-With `arm-none-eabi-gcc` and without presets (as in CI), use:
-
-```bash
-cmake . -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake -DCMAKE_BUILD_TYPE=Release -DOPENCR_IMAGE=app -Bbuild -G Ninja
-cmake --build build
-```
+With `arm-none-eabi-gcc` and without presets (as in CI), use the commands in the second code block above.
 
 During the build, LibXR checks whether the configurations, the lock, the Module headers and the hardware registrations in the entry source changed relative to `User/xrobot_main.hpp`; on a change the build fails and names the matching `xrobot gen -c <configuration>`.
 
