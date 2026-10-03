@@ -20,7 +20,7 @@ modules:
       - database: database
       - ramfs: ramfs
       - param:
-          data_rate: ICM20948::DataRate::DATA_RATE_1KHZ
+          data_rate: ICM20948::DataRate::DATA_RATE_281HZ
           accl_range: ICM20948::AcclRange::RANGE_16G
           gyro_range: ICM20948::GyroRange::DPS_2000
           # 安装方向四元数 (w, x, y, z) / mounting rotation quaternion (w, x, y, z)

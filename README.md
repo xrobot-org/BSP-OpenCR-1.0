@@ -34,13 +34,13 @@ The BSP builds three images: a full firmware, or a USB DFU bootloader and a matc
 
 | 配置 | 用途 |
 | --- | --- |
-| `User/xrobot.yaml` | 板载传感与提示：`BlinkLED`（`LED1`，周期 250 ms）、`BuzzerAlarm`（`pwm_buzzer`，1500 Hz）、`ICM20948`（`spi1`，1 kHz，加速度 16 g，陀螺仪 2000 dps）和 `MadgwickAHRS`（姿态解算，Topic 为 `ahrs_quaternion` 和 `ahrs_euler`）；完整固件和应用镜像使用这份配置，bootloader 由 `bootloader_main.cpp` 实现 |
+| `User/xrobot.yaml` | 板载传感与提示：`BlinkLED`（`LED1`，周期 250 ms）、`BuzzerAlarm`（`pwm_buzzer`，1500 Hz）、`ICM20948`（`spi1`，281 Hz，加速度 16 g，陀螺仪 2000 dps）和 `MadgwickAHRS`（姿态解算，Topic 为 `ahrs_quaternion` 和 `ahrs_euler`）；完整固件和应用镜像使用这份配置，bootloader 由 `bootloader_main.cpp` 实现 |
 
 新增配置的方法见 [项目管理](https://xrobot.work/docs/proj_man)。
 
 | Configuration | Purpose |
 | --- | --- |
-| `User/xrobot.yaml` | Onboard sensing and indication: `BlinkLED` (`LED1`, 250 ms cycle), `BuzzerAlarm` (`pwm_buzzer`, 1500 Hz), `ICM20948` (`spi1`, 1 kHz, 16 g accelerometer, 2000 dps gyroscope) and `MadgwickAHRS` (attitude estimation, Topics `ahrs_quaternion` and `ahrs_euler`); the full firmware and the application image use this configuration, and the bootloader is implemented by `bootloader_main.cpp` |
+| `User/xrobot.yaml` | Onboard sensing and indication: `BlinkLED` (`LED1`, 250 ms cycle), `BuzzerAlarm` (`pwm_buzzer`, 1500 Hz), `ICM20948` (`spi1`, 281 Hz, 16 g accelerometer, 2000 dps gyroscope) and `MadgwickAHRS` (attitude estimation, Topics `ahrs_quaternion` and `ahrs_euler`); the full firmware and the application image use this configuration, and the bootloader is implemented by `bootloader_main.cpp` |
 
 Adding a configuration is described in [Project Management](https://xrobot.work/docs/proj_man).
 
