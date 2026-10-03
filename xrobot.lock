@@ -30,7 +30,7 @@ modules:
     requested: same-or-dev
     resolved_ref: dev
     ref_kind: branch
-    commit: 86d93a8da24ea6232af208e8397f6605410162c3
+    commit: 281792e93f9e06724068114773b66e44f66524ec
   xrobot-org/MadgwickAHRS:
     repo: https://github.com/xrobot-org/MadgwickAHRS
     source: https://xrobot.work/xrobot-modules/index.yaml
