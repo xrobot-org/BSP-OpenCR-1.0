@@ -16,25 +16,25 @@ modules:
     requested: same-or-dev
     resolved_ref: dev
     ref_kind: branch
-    commit: a06688f8b145a197527fa97e56679437b8fc2180
+    commit: 2fc91fb42b01ce61db3e398cc80ee1bdc0e70638
   xrobot-org/BuzzerAlarm:
     repo: https://github.com/xrobot-org/BuzzerAlarm.git
     source: https://xrobot.work/xrobot-modules/index.yaml
     requested: same-or-dev
     resolved_ref: dev
     ref_kind: branch
-    commit: 44424519645a0d9297d5a7bd57b8dd4e0c342e74
+    commit: 8bd6b55d821200d2f97c40c1a49f41bb126b22e1
   xrobot-org/ICM20948:
     repo: https://github.com/xrobot-org/ICM20948.git
     source: https://xrobot.work/xrobot-modules/index.yaml
     requested: same-or-dev
     resolved_ref: dev
     ref_kind: branch
-    commit: 281792e93f9e06724068114773b66e44f66524ec
+    commit: f0d22c1a822eae23607d4c6b7766a8d32f1b8eae
   xrobot-org/MadgwickAHRS:
     repo: https://github.com/xrobot-org/MadgwickAHRS
     source: https://xrobot.work/xrobot-modules/index.yaml
     requested: same-or-dev
     resolved_ref: dev
     ref_kind: branch
-    commit: 286cc8935c9349c1d5c0446f6f5e957083465ee2
+    commit: 43cf556cb2fe93879fb79361c4393f9bfe65b998
