@@ -24,7 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,14 +59,14 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName);
 /* 栈溢出时进入 LibXR 的错误处理；强定义覆盖 CubeMX 和 LibXR 中的弱定义。
    A stack overflow goes to LibXR's error handling; this strong definition overrides the weak
    ones of CubeMX and LibXR. */
-extern void libxr_fatal_error(const char *file, uint32_t line, int in_isr);
+extern void libxr_fatal_error(const char *file, uint32_t line, bool in_isr);
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName)
 {
   (void)xTask;
   (void)pcTaskName;
   taskDISABLE_INTERRUPTS();
-  libxr_fatal_error(__FILE__, __LINE__, 0);
+  libxr_fatal_error(__FILE__, __LINE__, false);
 }
 /* USER CODE END 4 */
 
