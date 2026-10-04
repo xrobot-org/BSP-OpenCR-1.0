@@ -59,7 +59,7 @@ Terminal:
   thread_stack_depth: 2048
   thread_priority: 3
 database:
-  enable: false
+  enable: true
   block_size: 1
 SYSTEM: FreeRTOS
 IWDG:

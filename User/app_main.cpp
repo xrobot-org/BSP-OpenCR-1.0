@@ -98,6 +98,10 @@ extern "C" void app_main(void)
   static STM32UART usart3(&huart3, usart3_rx_buf, usart3_tx_buf, 5);
   static STM32CAN can2(&hcan2, 5);
 
+  // Flash and database
+  static STM32Flash flash(FLASH_REGIONS, FLASH_REGION_NUMBER);
+  static DatabaseRaw<1> database(flash);
+
   // Watchdog
   static STM32Watchdog iwdg(&hiwdg, 5000, 250);
   iwdg.Feed();
@@ -137,6 +141,8 @@ extern "C" void app_main(void)
 
   XR_REGISTER(iwdg, LibXR::Watchdog);
 
+  XR_REGISTER(database, LibXR::Database);
+
   /* User Code Begin 3 */
   static constexpr auto USB_OTG_FS_LANG_PACK = LibXR::USB::DescriptorStrings::MakeLanguagePack(
       LibXR::USB::DescriptorStrings::Language::EN_US, "XRobot",
@@ -175,15 +181,9 @@ extern "C" void app_main(void)
 
   static STM32F7TimerPWM pwm_buzzer(&htim1, BUZZER_SIG_GPIO_Port, BUZZER_SIG_Pin);
 
-  // Use physical sectors 6 and 7 (from 0x08080000). The app seal lives at the end of
-  // sector 5.
-  static STM32Flash flash(FLASH_REGIONS, FLASH_REGION_NUMBER, 0x08080000u);
-  static LibXR::DatabaseRaw<1> database(flash);
-
   XR_REGISTER(usb_otg_fs_cdc, LibXR::UART);
   XR_REGISTER(ramfs, LibXR::RamFS);
   XR_REGISTER(pwm_buzzer, LibXR::PWM);
-  XR_REGISTER(database, LibXR::Database);
   /* User Code End 3 */
   XROBOT_MAIN();
 }
