@@ -105,12 +105,11 @@ After changing and regenerating the code in CubeMX, `libxr stm32 setup` updates 
 
 `default` 镜像和 `bootloader` 镜像按 0x08000000 链接，`app` 镜像按 0x08040000 链接；bootloader 以 USB DFU 设备（"OpenCR App DFU"）接收 `app` 镜像，写入 0x08040000 起的应用区后跳转到应用。运行后通过 USB CDC 连接终端。
 
-bootloader 镜像本身通过 SWD 写入 0x08000000，可使用任意 SWD 调试器。`BootloaderDebug` 预设的产物为 `build/BootloaderDebug/OpenCR1.0.elf`；J-Link Commander 的 `loadbin` 读取二进制文件，因此先用 `objcopy` 转换为 `OpenCR1.0.bin`（`starm-clang` 工具链对应 `starm-objcopy`），再写入芯片：
+bootloader 镜像本身通过 SWD 写入 0x08000000，可使用任意 SWD 调试器。`BootloaderDebug` 预设在 `build/BootloaderDebug/` 下生成 `OpenCR1.0.elf`，以及构建后由 `cmake/LibXR.CMake` 转换出的 `OpenCR1.0.hex` 和 `OpenCR1.0.bin`。J-Link Commander 的 `loadbin` 读取二进制文件：
 
 ```bash
 cmake --preset BootloaderDebug
 cmake --build --preset BootloaderDebug
-arm-none-eabi-objcopy -O binary build/BootloaderDebug/OpenCR1.0.elf build/BootloaderDebug/OpenCR1.0.bin
 JLink.exe -device STM32F746ZG -if SWD -speed 4000
 ```
 
@@ -127,7 +126,7 @@ exit
 
 The `default` and `bootloader` images are linked for 0x08000000 and the `app` image for 0x08040000; the bootloader receives the `app` image as a USB DFU device ("OpenCR App DFU"), writes it to the application area starting at 0x08040000 and jumps to it. At run time the terminal is available over USB CDC.
 
-The bootloader image itself is written over SWD to 0x08000000 with any SWD probe. The `BootloaderDebug` preset produces `build/BootloaderDebug/OpenCR1.0.elf`; `loadbin` in J-Link Commander reads a binary file, so the ELF is first converted to `OpenCR1.0.bin` with `objcopy` (`starm-objcopy` for the `starm-clang` toolchain) and then written to the chip, using the commands in the code blocks above. In J-Link Commander, `loadbin` writes the image to 0x08000000, `r` resets the chip and `g` starts execution. Once the bootloader is running, the `app` image is written over USB DFU.
+The bootloader image itself is written over SWD to 0x08000000 with any SWD probe. The `BootloaderDebug` preset produces `OpenCR1.0.elf` in `build/BootloaderDebug/`, together with `OpenCR1.0.hex` and `OpenCR1.0.bin` converted after the build by `cmake/LibXR.CMake`. `loadbin` in J-Link Commander reads the binary file, using the commands in the code blocks above. In J-Link Commander, `loadbin` writes the image to 0x08000000, `r` resets the chip and `g` starts execution. Once the bootloader is running, the `app` image is written over USB DFU.
 
 本仓库以 Apache-2.0 发布，见 [LICENSE](LICENSE)；随仓库分发的第三方代码的许可见 [NOTICE](NOTICE)。
 
