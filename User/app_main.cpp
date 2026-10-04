@@ -183,6 +183,7 @@ extern "C" void app_main(void)
 
   XR_REGISTER(usb_otg_fs_cdc, LibXR::UART);
   XR_REGISTER(ramfs, LibXR::RamFS);
+  XR_REGISTER(terminal, LibXR::Terminal<32, 32, 5, 5>);
   XR_REGISTER(pwm_buzzer, LibXR::PWM);
   /* User Code End 3 */
   XROBOT_MAIN();
