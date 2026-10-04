@@ -77,7 +77,7 @@ cmake --build build
 
 在 CubeMX 中修改并重新生成代码后，运行 `libxr stm32 setup` 更新 `User/app_main.cpp`、`User/app_main.h`、`User/flash_map.hpp`、`User/libxr_config.yaml` 和 `cmake/LibXR.CMake`，`User Code` 区域保留。命令说明见 [LibXR_CppCodeGenerator](https://github.com/xrobot-org/LibXR_CppCodeGenerator)。
 
-`.github/workflows/xrobot_stm32.yml` 调用 XRobot 仓库中的共享工作流 `bsp-stm32-ci.yml`，写出工程名 `OpenCR1.0` 和三个预设 `GccRelease`、`GccBootloaderRelease`、`GccAppRelease`，用 `arm-none-eabi-gcc` 分别构建 `default`、`bootloader` 和 `app` 三个镜像；推送 `v*` 标签时发布这三个镜像。共享工作流的检查项与发布的文件见 [BSP CI](https://xrobot.work/docs/proj_man#bsp-ci)。
+`.github/workflows/xrobot_stm32.yml` 调用 XRobot 仓库中的共享工作流 `bsp-stm32-ci.yml`，写出工程名 `OpenCR1.0` 和三个预设 `GccRelease`、`GccBootloaderRelease`、`GccAppRelease`，用 `arm-none-eabi-gcc` 分别构建 `default`、`bootloader` 和 `app` 三个镜像；推送 `v*` 标签时发布这三个镜像。共享工作流的检查项与发布的文件见 [BSP CI](https://xrobot.work/docs/proj_man/proj-man-ci#bsp-ci)。
 
 Building uses CMake, Ninja and either `starm-clang` (the presets use `cmake/starm-clang.cmake`, picolibc configuration) or `arm-none-eabi-gcc` (`cmake/gcc-arm-none-eabi.cmake`, used by CI), with the compiler on `PATH`. XRobot is 1.0.0 and the LibXR CodeGenerator is 6.0.0, matching `xrobot:` in `Modules/modules.yaml` and `generator:` in `User/libxr_config.yaml`.
 
@@ -95,7 +95,7 @@ The application code is optimized with `-Og` in Debug; `LIBXR_OPT_RELEASE` is em
 
 After changing and regenerating the code in CubeMX, `libxr stm32 setup` updates `User/app_main.cpp`, `User/app_main.h`, `User/flash_map.hpp`, `User/libxr_config.yaml` and `cmake/LibXR.CMake`, and keeps the `User Code` regions. The commands are described in [LibXR_CppCodeGenerator](https://github.com/xrobot-org/LibXR_CppCodeGenerator).
 
-`.github/workflows/xrobot_stm32.yml` calls the shared workflow `bsp-stm32-ci.yml` of the XRobot repository and names the project `OpenCR1.0` and the three presets `GccRelease`, `GccBootloaderRelease` and `GccAppRelease`, which build the `default`, `bootloader` and `app` images with `arm-none-eabi-gcc`; pushing a `v*` tag publishes the three images. The checks of the shared workflow and the published files are described in [BSP CI](https://xrobot.work/en/docs/proj_man#bsp-ci).
+`.github/workflows/xrobot_stm32.yml` calls the shared workflow `bsp-stm32-ci.yml` of the XRobot repository and names the project `OpenCR1.0` and the three presets `GccRelease`, `GccBootloaderRelease` and `GccAppRelease`, which build the `default`, `bootloader` and `app` images with `arm-none-eabi-gcc`; pushing a `v*` tag publishes the three images. The checks of the shared workflow and the published files are described in [BSP CI](https://xrobot.work/en/docs/proj_man/proj-man-ci#bsp-ci).
 
 ## 4. 烧录与运行 / Flash and Run
 
