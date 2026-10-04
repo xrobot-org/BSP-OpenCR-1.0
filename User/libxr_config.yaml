@@ -1,3 +1,4 @@
+generator: 6.0.0
 terminal_source: ''
 software_timer:
   priority: 2
@@ -29,7 +30,7 @@ ADC:
     dma_section: .dma_buffer
     vref: 3.3
 CAN:
-  CAN2:
+  can2:
     queue_size: 5
 USB:
   usb_otg_fs:
@@ -57,6 +58,9 @@ Terminal:
   run_as_thread: true
   thread_stack_depth: 2048
   thread_priority: 3
+database:
+  enable: true
+  block_size: 1
 SYSTEM: FreeRTOS
 IWDG:
   iwdg:
@@ -65,125 +69,3 @@ IWDG:
 Watchdog:
   run_as_thread: false
   feed_interval_ms: 250
-FlashLayout:
-  model: STM32F746ZGT6
-  flash_base: '0x08000000'
-  flash_size_kb: 1024
-  sectors:
-  - index: 0
-    address: '0x08000000'
-    size_kb: 32.0
-  - index: 1
-    address: '0x08008000'
-    size_kb: 32.0
-  - index: 2
-    address: '0x08010000'
-    size_kb: 32.0
-  - index: 3
-    address: '0x08018000'
-    size_kb: 32.0
-  - index: 4
-    address: '0x08020000'
-    size_kb: 128.0
-  - index: 5
-    address: '0x08040000'
-    size_kb: 256.0
-  - index: 6
-    address: '0x08080000'
-    size_kb: 256.0
-  - index: 7
-    address: '0x080C0000'
-    size_kb: 256.0
-device_aliases:
-  power_manager:
-    type: PowerManager
-    aliases:
-    - power_manager
-  IMU_INT:
-    type: GPIO
-    aliases:
-    - IMU_INT
-  IMU_CS:
-    type: GPIO
-    aliases:
-    - IMU_CS
-  KEY2:
-    type: GPIO
-    aliases:
-    - KEY2
-  DXL_DIR:
-    type: GPIO
-    aliases:
-    - DXL_DIR
-  LED3:
-    type: GPIO
-    aliases:
-    - LED3
-  LED2:
-    type: GPIO
-    aliases:
-    - LED2
-  SW2:
-    type: GPIO
-    aliases:
-    - SW2
-  BUZZER_SIG:
-    type: GPIO
-    aliases:
-    - BUZZER_SIG
-  DXL_PWR_EN:
-    type: GPIO
-    aliases:
-    - DXL_PWR_EN
-  LED4:
-    type: GPIO
-    aliases:
-    - LED4
-  SW1:
-    type: GPIO
-    aliases:
-    - SW1
-  LED1:
-    type: GPIO
-    aliases:
-    - LED1
-  KEY1:
-    type: GPIO
-    aliases:
-    - KEY1
-  LED_RUN:
-    type: GPIO
-    aliases:
-    - LED_RUN
-  adc1_adc_channel_vrefint:
-    type: ADC
-    aliases:
-    - adc1_adc_channel_vrefint
-  adc1_adc_channel_vbat:
-    type: ADC
-    aliases:
-    - adc1_adc_channel_vbat
-  adc3_adc_channel_10:
-    type: ADC
-    aliases:
-    - adc3_adc_channel_10
-  spi1:
-    type: SPI
-    aliases:
-    - spi1
-  usart2:
-    type: UART
-    aliases:
-    - usart2
-  usart3:
-    type: UART
-    aliases:
-    - usart3
-  can2:
-    type: CAN
-    aliases:
-    - can2
-  iwdg:
-    type: Watchdog
-    aliases:
-    - iwdg

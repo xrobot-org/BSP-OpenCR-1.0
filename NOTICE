@@ -1,0 +1,33 @@
+BSP-OpenCR-1.0
+
+The files written for this repository are licensed under the Apache License,
+Version 2.0 (see LICENSE). The third-party code listed below is distributed
+with this repository under its own license, which is not changed by LICENSE.
+
+Drivers/CMSIS/
+  Arm CMSIS. Apache License 2.0; see Drivers/CMSIS/LICENSE.txt.
+
+Drivers/CMSIS/Device/ST/STM32F7xx/
+  STMicroelectronics CMSIS device support. Apache License 2.0; see
+  Drivers/CMSIS/Device/ST/STM32F7xx/LICENSE.txt.
+
+Drivers/STM32F7xx_HAL_Driver/
+  STMicroelectronics STM32F7xx HAL driver. BSD 3-Clause License; see
+  Drivers/STM32F7xx_HAL_Driver/LICENSE.txt.
+
+Middlewares/Third_Party/FreeRTOS/Source/
+  FreeRTOS Kernel V10.2.1, Copyright (C) Amazon.com, Inc. or its affiliates.
+  MIT License; as stated in the file headers.
+  CMSIS_RTOS/: CMSIS-RTOS v1 wrapper, portions Copyright STMicroelectronics and
+  ARM Limited; BSD 3-Clause style terms as stated in the file headers.
+
+STM32CubeMX-generated files: Core/, startup_stm32f746xx.s, STM32F746xx_FLASH.ld, STM32F746XX_APP.ld, STM32F746XX_BOOTLOADER.ld
+  Generated from STMicroelectronics templates. They keep the STMicroelectronics
+  (and, in Core/Inc/FreeRTOSConfig.h, Amazon) copyright notices and the license
+  terms stated in their headers; the linker scripts carry a BSD 3-Clause style
+  license and FreeRTOSConfig.h the MIT License. Code inside the USER CODE
+  sections was written for this repository.
+
+Middlewares/Third_Party/LibXR
+  Git submodule, not part of this repository's files. LibXR is licensed under
+  the Apache License 2.0; see its own LICENSE.
