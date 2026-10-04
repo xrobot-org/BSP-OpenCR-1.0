@@ -40,6 +40,36 @@
                 "OPENCR_IMAGE": "app",
                 "OPENCR_LINKER_SCRIPT": "${sourceDir}/STM32F746XX_APP.ld"
             }
+        },
+        {
+            "name": "gcc",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/gcc-arm-none-eabi.cmake",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "GccRelease",
+            "inherits": "gcc"
+        },
+        {
+            "name": "GccBootloaderRelease",
+            "inherits": "gcc",
+            "cacheVariables": {
+                "OPENCR_IMAGE": "bootloader",
+                "OPENCR_LINKER_SCRIPT": "${sourceDir}/STM32F746XX_BOOTLOADER.ld"
+            }
+        },
+        {
+            "name": "GccAppRelease",
+            "inherits": "gcc",
+            "cacheVariables": {
+                "OPENCR_IMAGE": "app",
+                "OPENCR_LINKER_SCRIPT": "${sourceDir}/STM32F746XX_APP.ld"
+            }
         }
     ],
     "buildPresets": [
@@ -58,6 +88,18 @@
         {
             "name": "AppDebug",
             "configurePreset": "AppDebug"
+        },
+        {
+            "name": "GccRelease",
+            "configurePreset": "GccRelease"
+        },
+        {
+            "name": "GccBootloaderRelease",
+            "configurePreset": "GccBootloaderRelease"
+        },
+        {
+            "name": "GccAppRelease",
+            "configurePreset": "GccAppRelease"
         }
     ]
 }
