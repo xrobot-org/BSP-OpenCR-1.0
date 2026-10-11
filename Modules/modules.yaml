@@ -1,4 +1,4 @@
-xrobot: 1.0.0
+xrobot: 1.0.1
 modules:
 - xrobot-org/BlinkLED@same-or-dev
 - xrobot-org/BuzzerAlarm@same-or-dev
